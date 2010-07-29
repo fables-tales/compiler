@@ -1,5 +1,9 @@
 module Lexer where
 import Data.List
+import Data.Char
+
+isWhiteSpace :: Char -> Bool
+isWhiteSpace x = x == ' ' || x == '\t' || x == '\n'
 
 data Token = TokenIdentifier String |
              --program start and end
