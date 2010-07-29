@@ -48,10 +48,8 @@ data Token = TokenIdentifier String |
              TokenLess deriving (Show, Eq)
 --deals with all tokens that are simple strings - nb cast everything to lowercase because we can.
 stringTokens = [
-                        ("+", TokenPlus),
-                        ("-", TokenMinus),
-                        ("*", TokenMul),
-                        ("/", TokenDiv),
+                        ("+", TokenPlus), ("-", TokenMinus),
+                        ("*", TokenMul), ("/", TokenDiv),
                         (":=", TokenAssign),
                         ("=", TokenEq),
                         ("<", TokenLess),
