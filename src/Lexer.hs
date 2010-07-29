@@ -70,11 +70,11 @@ stringTokens = [
                         ("repeat", TokenRepeat),
                         ("until", TokenUntil),
                         ("end", TokenEnd),
-                        ("begin", TokenBegin)]
-
-certain :: Maybe a -> a
-certain (Just a) = a
-certain Nothing = error "Tried to make a Nothing monad certain"
+                        ("begin", TokenBegin),
+                        ("program", TokenProgram),
+                        (".", TokenDot),
+                        ("e", TokenE)
+               ]
 
 getTokenForString :: String -> ((Maybe Token), Int)
 getTokenForString s = let pair = (find ((`isPrefixOf` s) . fst) stringTokens) in
@@ -86,3 +86,8 @@ lexer :: String -> [Token]
 lexer s | (fst (getTokenForString s) /= Nothing) = let tokString = getTokenForString s in
                                                     certain (fst (tokString)) : lexer (drop (snd tokString) s)
 lexer [] = []
+--turn a maybe monad into a certain value or error
+certain :: Maybe a -> a
+certain (Just a) = a
+certain Nothing = error "Tried to make a Nothing monad certain"
+
