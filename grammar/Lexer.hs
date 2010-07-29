@@ -52,6 +52,7 @@ stringTokens = [
                         ("*", TokenMul), ("/", TokenDiv),
                         (":=", TokenAssign),
                         ("=", TokenEq),
+                        ("!=", TokenNeq),
                         ("<", TokenLess),
                         ("<=", TokenLessEq),
                         (">", TokenGreater),
@@ -65,5 +66,9 @@ stringTokens = [
                         (";", TokenSemiColon),
                         ("var", TokenVar),
                         ("if", TokenIf),
-                        ("else", TokenElse)]
+                        ("else", TokenElse),
+                        ("repeat", TokenRepeat),
+                        ("until", TokenUntil),
+                        ("end", TokenEnd),
+                        ("begin", TokenBegin)]
 
