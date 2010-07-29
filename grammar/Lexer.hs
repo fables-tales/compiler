@@ -1,3 +1,6 @@
+module Lexer where
+import Data.List
+
 data Token = TokenIdentifier String |
              --program start and end
              TokenProgram String |
