@@ -72,3 +72,17 @@ stringTokens = [
                         ("end", TokenEnd),
                         ("begin", TokenBegin)]
 
+certain :: Maybe a -> a
+certain (Just a) = a
+certain Nothing = error "Tried to make a Nothing monad certain"
+
+getTokenForString :: String -> ((Maybe Token), Int)
+getTokenForString s = let pair = (find ((`isPrefixOf` s) . fst) stringTokens) in
+                        if pair == Nothing then (Nothing, 0)
+                        else let certainPair = certain pair in
+                            (Just (snd certainPair), length (fst certainPair))
+
+lexer :: String -> [Token]
+lexer s | (fst (getTokenForString s) /= Nothing) = let tokString = getTokenForString s in
+                                                    certain (fst (tokString)) : lexer (drop (snd tokString) s)
+lexer [] = []
