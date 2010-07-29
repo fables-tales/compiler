@@ -47,6 +47,7 @@ data Token = TokenIdentifier String |
              TokenLessEq |
              TokenLess deriving (Show, Eq)
 --deals with all tokens that are simple strings - nb cast everything to lowercase because we can.
+stringTokens :: [(String, Token)]
 stringTokens = [
                         ("+", TokenPlus), ("-", TokenMinus),
                         ("*", TokenMul), ("/", TokenDiv),
