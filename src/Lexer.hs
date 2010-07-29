@@ -6,13 +6,14 @@ isWhiteSpace :: Char -> Bool
 isWhiteSpace x = x == ' ' || x == '\t' || x == '\n'
 
 data Token = TokenIdentifier String |
-             --program start and end
-             TokenProgram String |
-             TokenEndProgram |
+             --program start
+             TokenProgram |
 
-             --constant tokens
-             TokenConstantInt Int |
-             TokenConstantReal Float |
+             --int literal, reals aren't lexed as tokens, but are parsed instead
+             TokenIntLiteral Int |
+
+             -- '.' and 'e' for floating point
+             TokenDot | TokenE |
 
              --operators
              TokenPlus | TokenMinus |
@@ -23,8 +24,7 @@ data Token = TokenIdentifier String |
              TokenCommentBlock String |
 
              -- strings
-             TokenSingleQuote |
-             TokenStringContents String |
+             TokenStringLiteral String |
 
              -- open and close bracket
              TokenOb | TokenCb |
