@@ -3,14 +3,19 @@ import Data.List
 import Data.Char
 
 isWhiteSpace :: Char -> Bool
-isWhiteSpace x = x == ' ' || x == '\t' || x == '\n'
+isWhiteSpace x = x `elem` "'\n \t\r"
 
 data Token = TokenIdentifier String |
+             --separates things
+             TokenComma |
              --program start
              TokenProgram |
 
              --int literal, reals aren't lexed as tokens, but are parsed instead
              TokenIntLiteral Int |
+
+             --type declrations
+             TokenINTEGER | TokenREAL |
 
              -- '.' and 'e' for floating point
              TokenDot | TokenE |
@@ -18,10 +23,6 @@ data Token = TokenIdentifier String |
              --operators
              TokenPlus | TokenMinus |
              TokenMul | TokenDiv |
-
-             --comment stuff - nb CommentBlocks are possibly multiline
-             TokenStartComment | TokenEndComment |
-             TokenCommentBlock String |
 
              -- strings
              TokenStringLiteral String |
@@ -72,12 +73,14 @@ stringTokens = [
                         ("end", TokenEnd),
                         ("begin", TokenBegin),
                         ("program", TokenProgram),
+                        ("integer", TokenINTEGER), ("real", TokenREAL),
                         (".", TokenDot),
+                        (",", TokenComma),
                         ("e", TokenE)
                ]
 
 --extracts a token from a string from the above simple strings map
-getTokenForString :: String -> ((Maybe Token), Int)
+getTokenForString :: String -> (Maybe Token, Int)
 getTokenForString s = let pair = (find ((`isPrefixOf` s) . fst) stringTokens) in
                         if pair == Nothing then (Nothing, 0)
                         else let certainPair = certain pair in
@@ -111,8 +114,8 @@ innerStringLiteral [] = []
 innerStringLiteral ('\'' : '\'' : rest) = '\'' : innerStringLiteral rest
 innerStringLiteral (c : rest) = c : innerStringLiteral rest
 
-getStringLiteral :: String -> ((Maybe String), Int)
-getStringLiteral s | (head s) == '\'' = let end = endQuoteIndex (elemIndices '\'' (drop 1 s)) in
+getStringLiteral :: String -> (Maybe String, Int)
+getStringLiteral s | head s == '\'' = let end = endQuoteIndex (elemIndices '\'' (drop 1 s)) in
                                         if end == Nothing then (Nothing, 0)
                                         else  (Just (innerStringLiteral (getPrefix (certain end) (drop 1 s))), certain end)
 getStringLiteral _ = (Nothing, 0)
@@ -120,20 +123,22 @@ getStringLiteral _ = (Nothing, 0)
 -- Int parameter is used for line counting
 lexer :: String -> Int -> [Token]
 lexer s lineCount | s == [] = []
-                  | (fst (getTokenForString (map toLower s)) /= Nothing) =
-                                                    let tokString = getTokenForString s in
-                                                    certain (fst (tokString)) : lexer (drop (snd tokString) s) lineCount
+                  | fst (getTokenForString (map toLower s)) /= Nothing =
+                                                    let tokString = getTokenForString (map toLower s) in
+                                                    certain (fst tokString) : lexer (drop (snd tokString) s) lineCount
 
                   | head s == '\n' = lexer (drop 1 s) (lineCount + 1)
+                  | head s == '{' = let commentSpan = span (/= '}') s in lexer (drop 1 (snd commentSpan)) lineCount
                   --drop whitespace if we're not in a string
                   | isWhiteSpace (head s) = lexer (drop 1 s) lineCount
                   --if we get an alpha we're at an identifier
-                  | isAlpha (head s) = let x = (span (isAlphaNum) s) in TokenIdentifier (fst x) : lexer (snd x) lineCount
+                  | isAlpha (head s) = let x = (span isAlphaNum s) in TokenIdentifier (map toLower (fst x)) : lexer (snd x) lineCount
                   -- integer constant lexer
-                  | isDigit (head s) = let x = span (isDigit) s in TokenIntLiteral (read (fst x) :: Int) : lexer (snd x) lineCount
+                  | isDigit (head s) = let x = span isDigit s in TokenIntLiteral (read (fst x) :: Int) : lexer (snd x) lineCount
                   -- lex string literal
-                  | getStringLiteral s /= (Nothing, 0) = let x = getStringLiteral s in TokenStringLiteral ((certain . fst) x) : lexer (drop ((snd x) + 2) s) lineCount
+                  | getStringLiteral s /= (Nothing, 0) = let x = getStringLiteral s in TokenStringLiteral ((certain . fst) x) : lexer (drop (snd x + 2) s) lineCount
                   --if we encounter something that isn't empty and we've not matched it it's an error
-                  | (s /= []) = error ("Lexer error at line " ++ (show lineCount) ++ " around your code:\"" ++ (take 5 s) ++ "\"")
+                  | s /= [] = error ("Lexer error at line " ++ show lineCount ++ " around your code:\"" ++ take 5 s ++ "\"")
 
 lexer [] lineCount = []
+lexer _ _ = []

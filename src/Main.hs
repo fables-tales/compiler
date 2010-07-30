@@ -1,4 +1,9 @@
 module Main where
+import System ( getArgs )
+import Lexer
 
 main :: IO()
-main = do putStrLn("super useful main function")
+main = do args <- getArgs;
+          contents <- readFile (head (args))
+          print (lexer contents 0)
+
