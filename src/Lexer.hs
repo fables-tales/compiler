@@ -5,6 +5,10 @@ import Data.Char
 isWhiteSpace :: Char -> Bool
 isWhiteSpace x = x `elem` "\n \t\r"
 
+matches :: Eq a =>a -> [a] -> Int
+matches a [] = 0
+matches a (item : rest) = if item == a then 1 + matches a rest else matches a rest
+
 data Token = TokenIdentifier String |
              --separates things
              TokenComma |
@@ -50,10 +54,13 @@ data Token = TokenIdentifier String |
              TokenGreater | TokenGreaterEq |
              TokenEq | TokenNeq |
              TokenLessEq |
-             TokenLess deriving (Show, Eq)
+             TokenLess deriving (Show, Eq, Ord)
 --deals with all tokens that are simple strings - nb cast everything to lowercase because we can.
+
+--do the reverse sort in order to get longest tokens first, this is important
+--because we do earliest match in gettoken and some tokens could be prefixes of longer tokens
 stringTokens :: [(String, Token)]
-stringTokens = [
+stringTokens = reverse ( sort [
                         ("+", TokenPlus), ("-", TokenMinus),
                         ("*", TokenMul), ("/", TokenDiv),
                         (":=", TokenAssign),
@@ -62,8 +69,8 @@ stringTokens = [
                         (">", TokenGreater), (">=", TokenGreaterEq),
                         ("(", TokenOb), (")", TokenCb),
                         ("read", TokenRead),
-                        ("write", TokenWrite),
                         ("writeln", TokenWriteLn),
+                        ("write", TokenWrite),
                         (";", TokenSemiColon),
                         ("var", TokenVar),
                         ("if", TokenIf),
@@ -77,18 +84,15 @@ stringTokens = [
                         (".", TokenDot),
                         (",", TokenComma),
                         ("e", TokenE)
-               ]
+               ])
 
 --extracts a token from a string from the above simple strings map
+--also gets the legnth of the token that's been lexed
 getTokenForString :: String -> (Maybe Token, Int)
 getTokenForString s = let pair = (find ((`isPrefixOf` s) . fst) stringTokens) in
                         if pair == Nothing then (Nothing, 0)
                         else let certainPair = certain pair in
                             (Just (snd certainPair), length (fst certainPair))
-
---define the quote character magic constants all over the place suck
-stringDelimiter :: Char
-stringDelimiter = '\''
 
 --turn a maybe monad into a certain value or error
 certain :: Maybe a -> a
@@ -123,22 +127,39 @@ getStringLiteral _ = (Nothing, 0)
 -- Int parameter is used for line counting
 lexer :: String -> Int -> [Token]
 lexer s lineCount | s == [] = []
+                  -- match simple string tokens
                   | fst (getTokenForString (map toLower s)) /= Nothing =
                                                     let tokString = getTokenForString (map toLower s) in
                                                     certain (fst tokString) : lexer (drop (snd tokString) s) lineCount
-
+                  
+                  --skip newlines but increment linecount
                   | head s == '\n' = lexer (drop 1 s) (lineCount + 1)
-                  | head s == '{' = let commentSpan = span (/= '}') s in lexer (drop 1 (snd commentSpan)) lineCount
+                  
+                  | head s == '{' = let commentSpan = span (/= '}') s in
+                                        lexer (drop 1 (snd commentSpan)) (lineCount + matches '\n' (fst commentSpan))
+                  
                   --drop whitespace if we're not in a string
                   | isWhiteSpace (head s) = lexer (drop 1 s) lineCount
+                  
                   --if we get an alpha we're at an identifier
-                  | isAlpha (head s) = let x = (span isAlphaNum s) in TokenIdentifier (map toLower (fst x)) : lexer (snd x) lineCount
-                  -- integer constant lexer
-                  | isDigit (head s) = let x = span isDigit s in TokenIntLiteral (read (fst x) :: Int) : lexer (snd x) lineCount
+                  | isAlpha (head s) = let x = (span isAlphaNum s) in 
+                                        TokenIdentifier (map toLower (fst x)) : lexer (snd x) lineCount
+                  
+                  -- integer constant
+                  | isDigit (head s) = let x = span isDigit s in 
+                                        TokenIntLiteral (read (fst x) :: Int) : lexer (snd x) lineCount
+                  
                   -- lex string literal
-                  | getStringLiteral s /= (Nothing, 0) = let x = getStringLiteral s in TokenStringLiteral ((certain . fst) x) : lexer (drop (snd x + 2) s) lineCount
+                  | getStringLiteral s /= (Nothing, 0) = let x = getStringLiteral s in 
+                                                TokenStringLiteral ((certain . fst) x) : 
+                                                lexer (drop (snd x + 2) s) (lineCount + matches '\n' ((certain . fst) x))
+                  
                   --if we encounter something that isn't empty and we've not matched it it's an error
                   | s /= [] = error ("Lexer error at line " ++ show lineCount ++ " around your code:\"" ++ take 5 s ++ "\"")
 
+--if we've run out of chars we're done
 lexer [] lineCount = []
-lexer _ _ = []
+
+--wildcard match, error because something unexpected happened
+lexer _ count = error ("hit a wildcard around line " ++ show count)
+        
