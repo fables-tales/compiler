@@ -3,7 +3,7 @@ import Data.List
 import Data.Char
 
 isWhiteSpace :: Char -> Bool
-isWhiteSpace x = x `elem` "'\n \t\r"
+isWhiteSpace x = x `elem` "\n \t\r"
 
 data Token = TokenIdentifier String |
              --separates things
