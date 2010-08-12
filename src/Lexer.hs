@@ -152,6 +152,9 @@ lexer s lineCount | s == [] = []
                   -- lex string literal
                   | getStringLiteral s /= (Nothing, 0) = let x = getStringLiteral s in 
                                                 TokenStringLiteral ((certain . fst) x) : 
+                                                --drop x + 2 chars because the literal doesn't include the
+                                                --beginning or end quotes
+                                                                            --increment linecount by the number of matches in the string
                                                 lexer (drop (snd x + 2) s) (lineCount + matches '\n' ((certain . fst) x))
                   
                   --if we encounter something that isn't empty and we've not matched it it's an error
