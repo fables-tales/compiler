@@ -5,5 +5,5 @@ import Lexer
 main :: IO()
 main = do args <- getArgs;
           contents <- readFile (head (args))
-          print (lexer contents 0)
+          print (lexer contents)
 
