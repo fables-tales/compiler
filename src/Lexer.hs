@@ -15,8 +15,9 @@ data Token = TokenIdentifier String |
              --program start
              TokenProgram |
 
-             --int literal, reals aren't lexed as tokens, but are parsed instead
+             --int literal, reals are lexed in stage 2 of the lexer
              TokenIntLiteral Int |
+             TokenRealLiteral Float |
 
              --type declrations
              TokenINTEGER | TokenREAL |
@@ -125,44 +126,69 @@ getStringLiteral s | head s == '\'' = let end = endQuoteIndex (elemIndices '\'' 
 getStringLiteral _ = (Nothing, 0)
 
 -- Int parameter is used for line counting
-lexer :: String -> Int -> [Token]
-lexer s lineCount | s == [] = []
+_lexer :: String -> Int -> [Token]
+_lexer s lineCount | s == [] = []
                   -- match simple string tokens
                   | fst (getTokenForString (map toLower s)) /= Nothing =
                                                     let tokString = getTokenForString (map toLower s) in
-                                                    certain (fst tokString) : lexer (drop (snd tokString) s) lineCount
-                  
+                                                    certain (fst tokString) : _lexer (drop (snd tokString) s) lineCount
+
                   --skip newlines but increment linecount
-                  | head s == '\n' = lexer (drop 1 s) (lineCount + 1)
-                  
+                  | head s == '\n' = _lexer (drop 1 s) (lineCount + 1)
+
                   | head s == '{' = let commentSpan = span (/= '}') s in
-                                        lexer (drop 1 (snd commentSpan)) (lineCount + matches '\n' (fst commentSpan))
-                  
+                                        _lexer (drop 1 (snd commentSpan)) (lineCount + matches '\n' (fst commentSpan))
+
                   --drop whitespace if we're not in a string
-                  | isWhiteSpace (head s) = lexer (drop 1 s) lineCount
-                  
+                  | isWhiteSpace (head s) = _lexer (drop 1 s) lineCount
+
                   --if we get an alpha we're at an identifier
-                  | isAlpha (head s) = let x = (span isAlphaNum s) in 
-                                        TokenIdentifier (map toLower (fst x)) : lexer (snd x) lineCount
-                  
+                  | isAlpha (head s) = let x = (span isAlphaNum s) in
+                                        TokenIdentifier (map toLower (fst x)) : _lexer (snd x) lineCount
+
                   -- integer constant
-                  | isDigit (head s) = let x = span isDigit s in 
-                                        TokenIntLiteral (read (fst x) :: Int) : lexer (snd x) lineCount
-                  
+                  | isDigit (head s) = let x = span isDigit s in
+                                        if (read (fst x) :: Int) > 2^32 then error ("int literal encountered bigger than 2^32 at line " ++ show lineCount)
+                                        else TokenIntLiteral (read (fst x) :: Int) : _lexer (snd x) lineCount
+
                   -- lex string literal
-                  | getStringLiteral s /= (Nothing, 0) = let x = getStringLiteral s in 
-                                                TokenStringLiteral ((certain . fst) x) : 
+                  | getStringLiteral s /= (Nothing, 0) = let x = getStringLiteral s in
+                                                TokenStringLiteral ((certain . fst) x) :
                                                 --drop x + 2 chars because the literal doesn't include the
                                                 --beginning or end quotes
                                                                             --increment linecount by the number of matches in the string
-                                                lexer (drop (snd x + 2) s) (lineCount + matches '\n' ((certain . fst) x))
-                  
+                                                _lexer (drop (snd x + 2) s) (lineCount + matches '\n' ((certain . fst) x))
+
                   --if we encounter something that isn't empty and we've not matched it it's an error
                   | s /= [] = error ("Lexer error at line " ++ show lineCount ++ " around your code:\"" ++ take 5 s ++ "\"")
 
 --if we've run out of chars we're done
-lexer [] lineCount = []
+_lexer [] lineCount = []
 
 --wildcard match, error because something unexpected happened
-lexer _ count = error ("hit a wildcard around line " ++ show count)
-        
+_lexer _ count = error ("hit a wildcard around line " ++ show count)
+
+fl :: (Integral a) => a -> Float
+fl a = fromIntegral a :: Float
+
+logBaseTen :: Int -> Float
+logBaseTen 0 = 0
+logBaseTen a = logBase 10.0 (fl a) :: Float
+
+computeFloat :: Int -> Int -> Float
+computeFloat a b = fl a + fl b / fl (10 ^ (floor (logBaseTen b) + 1))
+
+exp10 :: Int -> Float
+exp10 a | a >= 0 = fl (10 ^ a)
+		| a < 0 = 1.0/fl (10^(-a))
+
+--lex real numbers to real tokens
+lexreals :: [Token] -> [Token]
+lexreals (TokenIntLiteral a : TokenDot : TokenIntLiteral b : TokenE : TokenMinus : TokenIntLiteral c : rest) = TokenRealLiteral (computeFloat a b * exp10 (-c)) : lexreals rest
+lexreals (TokenIntLiteral a : TokenDot : TokenIntLiteral b : TokenE : TokenIntLiteral c : rest) = TokenRealLiteral (computeFloat a b * exp10 c) : lexreals rest
+lexreals (TokenIntLiteral a : TokenDot : TokenIntLiteral b : rest) = TokenRealLiteral (computeFloat a b) : lexreals rest
+lexreals [] = []
+lexreals (a : rest) = a : lexreals rest
+
+lexer :: String -> [Token]
+lexer a = lexreals (_lexer a 0)
