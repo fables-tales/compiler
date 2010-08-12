@@ -103,11 +103,22 @@ relation: '>' {RelGreater}
         | '<' {RelLess}
 
 
-expression: firstFactor '+' factor
-          | firstFactor '-' factor
+expression: prefix '+' restExp
+          | prefix '-' restExp
+          | prefix '*' restExp
+          | prefix '/' restExp
+          | prefix
+          | prefix '(' expression ')'
 
-factor: factor
 
+restExp: term
+       | '(' expression ')'
+
+
+term: varible
+    | constant
+
+prefix: unaryop term
 
 unaryop: '+'
        | '-'
