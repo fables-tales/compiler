@@ -20,7 +20,6 @@ import Lexer
     '(' {TokenOb}
     ')' {TokenCb}
     '.' {TokenDot}
-    'E' {TokenE}
     ';' {TokenSemiColon}
     VAR {TokenVar}
     ':=' {TokenAssign}
@@ -41,10 +40,11 @@ import Lexer
     ELSE {TokenElse}
 
     iliteral {TokenIntLiteral $$}
+    rliteral {TokenRealLiteral $$}
     sliteral {TokenStringLiteral $$}
     identifier {TokenIdentifier $$}
 
-$$
+%%
 
 program : PROGRAM programname ';' block '.' {$2}
 
