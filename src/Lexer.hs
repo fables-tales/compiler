@@ -191,4 +191,4 @@ lexreals [] = []
 lexreals (a : rest) = a : lexreals rest
 
 lexer :: String -> [Token]
-lexer a = lexreals (_lexer a 0)
+lexer a = lexreals (_lexer a 1)
