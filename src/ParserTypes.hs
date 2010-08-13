@@ -30,4 +30,4 @@ data NumberLiteral = RealLiteral Float | IntegerLiteral Int deriving (Show, Read
 _negate :: Expression -> Expression
 _negate a = Multiply (TermConstant (IntegerLiteral (-1))) a
 
-parseError _ = error "ponies"
+parseError a = error (show a)
