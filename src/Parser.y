@@ -1,5 +1,7 @@
 {
 module Parser where
+import System.IO.Unsafe
+import IO
 import Lexer
 import ParserTypes
 }
