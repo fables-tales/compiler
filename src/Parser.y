@@ -115,7 +115,7 @@ expression: prefix '+' restExp {Add $1 $3}
           | prefix '*' restExp {Multiply $1 $3}
           | prefix '/' restExp {Divide $1 $3}
           | prefix {$1}
-          | unaryop '(' expression ')' {if $1 == UnaryPlus then $3 else negate $3}
+          | unaryop '(' expression ')' {if $1 == UnaryPlus then $3 else _negate $3}
 
 restExp :: {Expression}
 restExp: term {$1}
@@ -130,7 +130,7 @@ term: variable {TermVar $1}
     | constant {TermConstant $1}
 
 prefix :: {Expression}
-prefix: unaryop term {if $1 == UnaryPlus then $2 else negate $2}
+prefix: unaryop term {if $1 == UnaryPlus then $2 else _negate $2}
 
 unaryop :: {UnaryOp}
 unaryop: '+' {UnaryPlus}
