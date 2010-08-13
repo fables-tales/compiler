@@ -1,6 +1,7 @@
 {
 module Parser where
 import Lexer
+import ParserTypes
 }
 
 %name camleParser
