@@ -46,11 +46,16 @@ import Lexer
 
 %left '/' '*' '+' '-'
 %%
+program :: {Program}
+program : PROGRAM programname ';' block '.' {Program $2 $4}
 
-program : PROGRAM programname ';' block '.' {$2}
-
+programname :: {Identifier}
 programname : identifier {$1}
 
+variable :: {Identifier}
+variable: identifier {VarIdentifier $1}
+
+block :: {Block}
 block : declarationblock compoundstatement {Block $1 $2}
 
 declarationblock :: {[Declaration]}
@@ -63,7 +68,7 @@ declarations : idlist type ';' declarations {Declaration $1 $2 : $3}
 
 idlist :: {[Identifier]}
 idlist : identifier {[$1]}
-       | idlist ',' identifier {$1 ++ [$2]}
+       | idlist ',' identifier {$1 ++ [VarIdentifier $2]}
 
 type :: {Type}
 type : REAL {RealType}
@@ -127,12 +132,12 @@ term: variable {TermVar $1}
 prefix :: {Expression}
 prefix: unaryop term {if $1 == UnaryPlus then $2 else negate $2}
 
+unaryop :: {UnaryOp}
 unaryop: '+' {UnaryPlus}
        | '-' {UnaryMinus}
        | {-empty-} {UnaryPlus}
 
 
-variable: identifier {VarIdentifier $1}
-
+constant :: {NumberLiteral}
 constant: rliteral {RealLiteral $1}
         | iliteral {IntegerLiteral $1}
