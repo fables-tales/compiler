@@ -1,0 +1,3 @@
+my compiler depends on happy and binary package these can be installed with
+cabal install binary
+cabal install happy
