@@ -113,19 +113,19 @@ relation: '>' {RelGreater}
         | '<' {RelLess}
 
 expression :: {Expression}
-expression: prefix '+' restExp {Add $1 $3}
-          | prefix '-' restExp {Subtract $1 $3}
-          | prefix '*' restExp {Multiply $1 $3}
-          | prefix '/' restExp {Divide $1 $3}
+expression: prefix '+' restExp {Op Add $1 $3}
+          | prefix '-' restExp {Op Subtract $1 $3}
+          | prefix '*' restExp {Op Multiply $1 $3}
+          | prefix '/' restExp {Op Divide $1 $3}
           | prefix {$1}
 
 restExp :: {Expression}
 restExp: term {$1}
        | '(' expression ')' {$2}
-       | restExp '+' restExp {Add $1 $3}
-       | restExp '-' restExp {Subtract $1 $3}
-       | restExp '*' restExp {Multiply $1 $3}
-       | restExp '/' restExp {Divide $1 $3}
+       | restExp '+' restExp {Op Add $1 $3}
+       | restExp '-' restExp {Op Subtract $1 $3}
+       | restExp '*' restExp {Op Multiply $1 $3}
+       | restExp '/' restExp {Op Divide $1 $3}
 
 term :: {Expression}
 term: variable {TermVar $1}
