@@ -1,0 +1,53 @@
+{Program to find cosine of a given number (radians)}
+{please run with data of 1 radians and  20 terms }
+
+Program testc;
+var x,Answer,xpower real;    {Answer=cos(x),xpower is an incremental power of  x used in the taylor series}
+    counter,fact,sign real;   {The counter indicates the next factorial number to be calculated}
+    accuracy integer; 		{Accuracy refers to the number of terms used to calculate cos(x)}
+
+begin     
+    write('Recommended Input:'); writeln;
+    write('1'); writeln;
+    write('20'); writeln; writeln;
+
+    counter:=0.0;                {Initialisation}
+    xpower:=1.0;
+    Answer:=1.0;
+    fact:=1.0;
+    sign:=0.0-1.0;
+       	
+    write('Program to calculate the cosine of a given number using a taylor expansion');
+    writeln;
+    write('Please enter the number: ');
+    read(x);
+    writeln;
+    write('Please enter the number of terms to be used in the expansion(>1).');
+    writeln;
+    write('Note large numbers (>20) may cause floating point overflow: ');
+    read(accuracy);
+    writeln;
+    
+    if accuracy>1  {Catch the case where the number of taylor terms is not larger than one}
+	begin
+		repeat	{This loop adds successive taylor terms}
+        		begin
+				xpower:=xpower*x*x*sign;		{sign ensures the +ve -ve +ve aspect of series}
+				counter:=counter+2.0;		{factorial number increments by two each time}
+				fact:=fact*counter*(counter-1.0);{Calculate factorial number incrementally}
+				accuracy:=accuracy-1;
+				Answer:=Answer+(xpower/fact);	{Increment the new estimate of cos(x)}
+   	 		end
+		until accuracy<0;  {repeat}
+    	
+		write('(Approximate) answer: ');			{Output the approx. answer}
+    		write(Answer);
+    		writeln;
+   	end 
+    else
+	begin
+		write('The number of terms given must be larger than 1');	{Catch the fall through case}
+    		writeln;
+	end;
+ 
+end.

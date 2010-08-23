@@ -1,0 +1,43 @@
+{test0: program to test lexical and syntax analysis.}
+program test0;
+var I1, i2 integer;
+    NUM real;
+    max REAL;
+    alongname INTEGER;
+BEGIN
+  READ(max);
+  write(MAX);
+  writeln;
+  num := (331*max-0.3e-4)/2+max;
+  i1 := -0;
+  read(I2);
+  IF num != max
+  begin
+    LIMIT := num;
+    if num >= -max
+    BEGIN
+      WRITE(3+MAX/2);
+    END;
+  END
+  ELSE
+  BEGIN
+    REPEAT
+    BEGIN
+      IF I1 > alongname*2
+      BEGIN
+        max := max/0.13333;
+      end;
+    END
+    until I1 > 2*I2-1;
+    alongname := max;
+  end;
+  REPEAT
+  begin
+    if i1 = i2
+    begin
+      write('yes');
+    end;
+    i1 := i1+1;
+  END
+  UNTIL i1 >= limit;
+END.

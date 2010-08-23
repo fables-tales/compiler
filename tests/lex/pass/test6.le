@@ -1,0 +1,16 @@
+{test6: program to test read statements.}
+{Already tested: assignment, write statements, integer variables, and integer and real constants.}
+program test6;
+var x, y real;
+    i, j integer;
+begin
+  write('Enter an integer: ');
+  read(I);
+  write('Enter a real: ');
+  read(X);
+  write('Integer is ');
+  write(i);
+  write('; real is ');
+  write(x);
+  writeln;
+end.

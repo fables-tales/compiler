@@ -1,0 +1,51 @@
+{Program to find square root of an integer}
+{use 43 as data }
+Program testd;
+var n, guess, inc real; 
+
+begin
+    write('Recommended input:'); writeln;
+    write('43'); writeln; writeln;
+
+    guess:=0;            		{first guess at answer}
+    inc:=1.0;            		{guess increment}
+    write('Square root.');
+    writeln;
+    write('Enter number: ');
+    read(n);
+    writeln;
+    if n<0.0           		{No root if number is <0}
+    begin
+        write('No real root exists.');
+        writeln;
+    end
+    else
+    begin
+        repeat		    		{while increment is not too small}
+        begin
+            
+	    repeat		  	{while guess^2 is too small}
+            begin
+                guess:=guess+inc;    	{increase guess by increment}
+            end
+            until guess*guess >= n; {repeat}
+            
+	    if guess*guess=n       {if guess was right}
+            begin                	{do nothing}
+            end
+            else
+            begin
+                guess:=guess-inc;    	{else go back to last
+                            		 guess that was 
+                            		 smaller than right
+                            		 answer}
+            end;    {if}
+            inc:=inc/2.0;            	{halve increment then loop again}
+        end
+	until inc<0.0001; {repeat}
+    
+        write('(Approximate) answer: ');
+        write(guess);
+        writeln;
+    end; {if}
+end.

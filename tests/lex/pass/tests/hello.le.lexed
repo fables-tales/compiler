@@ -1,0 +1,1 @@
+[TokenProgram,TokenIdentifier "hello",TokenSemiColon,TokenBegin,TokenWrite,TokenOb,TokenStringLiteral "Hello ",TokenCb,TokenSemiColon,TokenWrite,TokenOb,TokenStringLiteral "world",TokenCb,TokenSemiColon,TokenWriteLn,TokenSemiColon,TokenEnd,TokenDot]

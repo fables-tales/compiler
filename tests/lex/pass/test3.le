@@ -1,0 +1,17 @@
+{test3: program to test expressions containing operators.}
+{Already tested: write statements and integer and real constants.}
+program test3;
+begin
+  write(-5);
+  writeln;
+  write(+4+3);
+  writeln;
+  write(1+2*(-6)-20/4);
+  writeln;
+  write(-0.5);
+  writeln;
+  write(-0.4-0.3);
+  writeln;
+  write(0.1/(0.25+0.05)+2.0e-1*(-6.0)-0.2/0.4);
+  writeln;
+end.

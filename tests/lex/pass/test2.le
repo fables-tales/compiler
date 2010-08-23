@@ -1,0 +1,13 @@
+{test2: program to test real constants.}
+{Already tested: write statements and integer constants.}
+program test2;
+begin
+  write(0.0);
+  writeln;
+  write(12345.6789);
+  writeln;
+  write(5.6e7);
+  writeln;
+  write(1.2E-3);
+  writeln;
+end.

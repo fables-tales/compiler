@@ -1,0 +1,20 @@
+{test8: program to test loops.}
+{Already tested: write statements and integer and real constants.}
+{Note: need to use the "-j" option of assmule to prevent infinite loops.}
+program test8;
+begin
+  repeat begin write(1); end until 1 >= 2;
+  repeat begin write(2); end until 2 <= 3;
+  repeat begin write(3); writeln; end until 4 != 4;
+  repeat begin write(5); writeln; writeln; end until 5 = 5;
+  repeat begin write(7); end until 6 > 7;
+  repeat begin end until 8 < 9;
+  repeat begin end until 0.1 >= 0.2;
+  repeat begin write('a'); end until 0.2 <= 0.3;
+  repeat begin write('b'); end until 0.4 != 0.4;
+  repeat
+  begin
+    repeat begin write('c'); end until 0.7 > 0.8;
+    repeat begin write('d'); end until 0.9 < 1.0e-1;
+  end until 0.5 = 6.0;
+end.

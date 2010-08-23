@@ -1,0 +1,34 @@
+PROGRAM testb ;
+{ Primes test program }
+{ suggest input value of 11111}
+VAR
+i,j,k INTEGER;
+BEGIN
+WRITE('Recommended input:'); WRITELN;
+WRITE('11111'); WRITELN; WRITELN;
+READ(I);
+j:=2;
+k:=0;
+REPEAT
+BEGIN
+	IF (i/j)*j = i
+	BEGIN
+		k:=1;
+        END;
+j:=j+1;
+END
+UNTIL j > i/2;
+
+WRITE(i);
+
+IF k=0
+BEGIN
+	WRITE(' is a prime number');
+END
+ELSE
+BEGIN
+	WRITE(' is not a prime number ');
+
+END;
+WRITELN;
+END.

@@ -1,0 +1,10 @@
+{test1: program to test write statements and integer constants.}
+program test1;
+begin
+  write(0);
+  writeln;
+  write(1234567890);
+  writeln;
+  write(2147483647);
+  writeln;
+end.

@@ -1,0 +1,2 @@
+{should fail because int literal is too big}
+90123840192834091238490128
