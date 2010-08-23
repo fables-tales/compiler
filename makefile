@@ -1,11 +1,17 @@
 BUILD_DIR = build
-HASKELL = src/Lexer.hs src/LexerMain.hs
+HASKELL = src/ParserTypes.hs src/Lexer.hs src/Parser.hs src/IR.hs
+LEXER_MAIN = src/LexerMain.hs
+MAIN = src/CompilerMain.hs
 TMP_DIR = "/tmp/compilerponies"
 
-all: $(BUILD_DIR)/lexerbin
+all: $(BUILD_DIR)/lexerbin $(BUILD_DIR)/compiler
 
-$(BUILD_DIR)/lexerbin: $(BUILD_DIR) $(TMP_DIR) $(HASKELL)
-	ghc $(HASKELL) -o "$@" -tmpdir $(TMP_DIR) -w -Wall -Wwarn
+$(BUILD_DIR)/lexerbin: $(BUILD_DIR) $(TMP_DIR) $(HASKELL) $(LEXER_MAIN)
+	ghc $(HASKELL) $(LEXER_MAIN) -o "$@" -tmpdir $(TMP_DIR)
+	rm src/*.hi src/*.o
+
+$(BUILD_DIR)/compiler: $(BUILD_DIR) $(TMP_DIR) $(HASKELL) $(COMPILER_MAIN)
+	ghc $(HASKELL) $(MAIN) -o "$@" -tmpdir $(TMP_DIR)
 	rm src/*.hi src/*.o
 
 $(BUILD_DIR):
