@@ -47,7 +47,7 @@ import ParserTypes
     sliteral {TokenStringLiteral $$}
     identifier {TokenIdentifier $$}
 
-%left '/' '*' '+' '-'
+%left '-' '+' '*' '/'
 %%
 program :: {Program}
 program : PROGRAM programname ';' block '.' {Program $2 $4}
