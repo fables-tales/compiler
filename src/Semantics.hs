@@ -1,7 +1,8 @@
 module Semantics where
-import ParserTypes
 import List
 import Maybe
+
+import ParserTypes
 
 --TODO: replace add/div/mul/sub with binop, seriously
 

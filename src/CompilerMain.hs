@@ -1,9 +1,10 @@
 module Main where
+import System ( getArgs )
+
 import Parser
 import Lexer
 import IR
 import Semantics
-import System ( getArgs )
 
 
 main :: IO()

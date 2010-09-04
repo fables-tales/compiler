@@ -1,5 +1,6 @@
 module Main where
 import System ( getArgs )
+
 import Lexer
 
 main :: IO()
