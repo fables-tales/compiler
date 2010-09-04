@@ -87,6 +87,7 @@ _toIrForm (Assign id exp : rest) dataTable decs = let
                                                   in
                                            fst pair ++
                                            (if snd pair == TReal && getType decs id == TInt then [RToI 0] else []) ++
+                                           (if snd pair == TInt && getType decs id == TReal then [IToR 0] else []) ++
                                            MemoryStore 0 (varLocation vOff decs id) :
                                            _toIrForm rest dataTable decs
 
