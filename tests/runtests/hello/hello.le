@@ -1,0 +1,6 @@
+program hello;
+begin
+   write('Hello ');
+   write('world');
+   writeln;
+end.

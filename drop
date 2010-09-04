@@ -1,0 +1,25 @@
+#!/usr/bin/python
+
+import sys
+
+if __name__ == "__main__":
+    fp = None
+    if len(sys.argv) == 2:
+        fp = sys.stdin
+    elif len(sys.argv) == 3:
+        fp = open(sys.argv[2])
+    else:
+        sys.stderr.write("usage is drop n [filename] if filename isn't supplied stdin will be read\n")
+        sys.stderr.write("n is the number of lines to drop from the end of input")
+        sys.exit(1)
+
+    line_count = 0
+    lines = []
+    n = int(sys.argv[1])
+    for line in fp.readlines():
+        lines.append(line)
+
+    for line in lines[0:len(lines)-n]:
+        sys.stdout.write(line)
+
+
