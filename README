@@ -4,8 +4,19 @@ my compiler depends on
     * python 2.6 and greater (but not 3.0)
     * bash
 
+project is built with a makefile
+
 make check can be used to run some tests if assmule is in the root of the
 project (the directory that contains this readme!)
 
 drop, test.py and testrun.sh all need to be executable in order for make check
 to function
+
+binaries are in "build/"
+* lexerbin is the lexer
+* parserbin is the parser
+* semanticsbin does semantic analysis
+* compiler is the acutal compiler
+* optimizing_compiler is an optimizing version of the compiler -- tests verify that this is idempotent
+
+all binaries take two arguments, an input file an an output file
