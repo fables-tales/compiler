@@ -115,7 +115,7 @@ defaultTransform :: [Statement] -> [Statement]
 defaultTransform = _transformExpressions  _foldNegation
 
 --returns true if the semantics of the program are valid, false otherwise
-verifySemantics :: Program -> Bool
+verifySemantics :: Program -> (Bool,Program)
 verifySemantics (Program pname (Block decs statements)) = let transformedStatements = defaultTransform statements in
-														      not (tableCheck (buildSymbolTable decs) transformedStatements) &&
-															  (not . or) (_mapOverExpressions _verifyConstants transformedStatements)
+														      ((not (tableCheck (buildSymbolTable decs) transformedStatements) &&
+															  (not . or) (_mapOverExpressions _verifyConstants transformedStatements)), Program pname (Block decs transformedStatements))
