@@ -17,6 +17,8 @@ data Token = TokenIdentifier String |
 
              --int literal, reals are lexed in stage 2 of the lexer
              TokenIntLiteral Int |
+             --a number of leading zeros
+             TokenLeadingZeros Int |
              TokenRealLiteral Float |
 
              --type declrations
@@ -148,8 +150,8 @@ _lexer s lineCount | s == [] = []
 
                   -- integer constant
                   | isDigit (head s) = let x = span isDigit s in
-                                        if (read (fst x) :: Int) > 2^32 then error ("int literal encountered bigger than 2^32 at line " ++ show lineCount)
-                                        else TokenIntLiteral (read (fst x) :: Int) : _lexer (snd x) lineCount
+                                        let y = span (=='0') s in
+                                            TokenLeadingZeros ((length . fst) y) : TokenIntLiteral (read (fst x) :: Int) : _lexer (snd x) lineCount
 
                   -- lex string literal
                   | getStringLiteral s /= (Nothing, 0) = let x = getStringLiteral s in
@@ -176,19 +178,28 @@ logBaseTen 0 = 0
 logBaseTen a = logBase 10.0 (fl a) :: Float
 
 computeFloat :: Int -> Int -> Float
-computeFloat a b = fl a + fl b / fl (10 ^ (floor (logBaseTen b) + 1))
+computeFloat a b = fl a + (fl b / fl (10 ^ (floor (logBaseTen b) + 1)))
 
 exp10 :: Int -> Float
 exp10 a | a >= 0 = fl (10 ^ a)
-		| a < 0 = 1.0/fl (10^(-a))
+        | a < 0 = 1.0/fl (10^(-a))
+
+_killLeadingZeros :: [Token] -> [Token]
+_killLeadingZeros (TokenDot : TokenLeadingZeros a : TokenIntLiteral 0 : rest) = TokenDot : TokenLeadingZeros 0 : TokenIntLiteral 0 : _killLeadingZeros rest
+_killLeadingZeros (TokenDot : TokenLeadingZeros a : TokenIntLiteral b : rest)  = TokenDot : TokenLeadingZeros a : TokenIntLiteral b : _killLeadingZeros rest
+_killLeadingZeros (TokenLeadingZeros zeros : TokenIntLiteral b : rest) = TokenIntLiteral b : _killLeadingZeros rest
+_killLeadingZeros (TokenLeadingZeros a : rest) = error "zeros found somewhere they shouldn't be"
+_killLeadingZeros (a : rest) = a : _killLeadingZeros rest
+_killLeadingZeros [] = []
+
 
 --lex real numbers to real tokens
 lexreals :: [Token] -> [Token]
-lexreals (TokenIntLiteral a : TokenDot : TokenIntLiteral b : TokenE : TokenMinus : TokenIntLiteral c : rest) = TokenRealLiteral (computeFloat a b * exp10 (-c)) : lexreals rest
-lexreals (TokenIntLiteral a : TokenDot : TokenIntLiteral b : TokenE : TokenIntLiteral c : rest) = TokenRealLiteral (computeFloat a b * exp10 c) : lexreals rest
-lexreals (TokenIntLiteral a : TokenDot : TokenIntLiteral b : rest) = TokenRealLiteral (computeFloat a b) : lexreals rest
+lexreals (TokenIntLiteral a : TokenDot : TokenLeadingZeros zeros : TokenIntLiteral b : TokenE : TokenMinus : TokenIntLiteral c : rest) = TokenRealLiteral ((computeFloat a b * (exp10 ((-c)-zeros)))) : lexreals rest
+lexreals (TokenIntLiteral a : TokenDot : TokenLeadingZeros zeros : TokenIntLiteral b : TokenE : TokenIntLiteral c : rest) = TokenRealLiteral (computeFloat a b * (exp10 (c-zeros))) : lexreals rest
+lexreals (TokenIntLiteral a : TokenDot : TokenLeadingZeros zeros : TokenIntLiteral b : rest) = TokenRealLiteral ((computeFloat a b) / (exp10 zeros)) : lexreals rest
 lexreals [] = []
 lexreals (a : rest) = a : lexreals rest
 
 lexer :: String -> [Token]
-lexer a = lexreals (_lexer a 1)
+lexer a = (lexreals . _killLeadingZeros) (_lexer a 1)
