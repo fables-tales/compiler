@@ -1,3 +1,11 @@
-my compiler depends on happy and binary package these can be installed with
-cabal install binary
-cabal install happy
+my compiler depends on
+    * haskell
+    * happy
+    * python 2.6 and greater (but not 3.0)
+    * bash
+
+make check can be used to run some tests if assmule is in the root of the
+project (the directory that contains this readme!)
+
+drop, test.py and testrun.sh all need to be executable in order for make check
+to function
