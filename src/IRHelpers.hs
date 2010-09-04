@@ -29,7 +29,7 @@ sizeAdd str size = length str + size + 1
 
 --the round size fo a data table
 roundDataSize :: Int -> [IRForm] -> [IRForm]
-roundDataSize round values = values ++ (replicate (round - (length values `mod` round)) (DataPseudo 0))
+roundDataSize round values = values ++ replicate (round - (length values `mod` round)) (DataPseudo 0)
 
 --gets the size of the string section, use to offset declarations
 stringSectionSize :: [((String, Int), [IRForm])] -> Int
@@ -77,8 +77,8 @@ findStringLocation table a = let triple = find ((== a) . fst . fst) table in
 
 --gets the type of a specific variable
 getType :: [Declaration] -> Identifier -> IRExpType
-getType (Declaration ids t : rest) id = if (find (== id) ids == Nothing) then
-                                        getType rest id else (toIRExpType t)
+getType (Declaration ids t : rest) id = if find (== id) ids == Nothing then
+                                        getType rest id else toIRExpType t
 getType [] id = error ("attempted to lookup unknown identifier " ++ show id)
 
 --selects treal if either is treal, else int
@@ -86,7 +86,7 @@ selectRichestType :: IRExpType -> IRExpType -> IRExpType
 selectRichestType a b = if TReal `elem` [a,b] then TReal else TInt
 
 checkedCast :: IRExpType -> IRExpType -> Int -> [IRForm]
-checkedCast richest t reg = if richest > t then [IToR reg] else []
+checkedCast richest t reg = [IToR reg | richest > t]
 
 irOperations :: [((BinOp,IRExpType),MathOp)]
 irOperations = [
@@ -110,7 +110,7 @@ irForOp op a richest c1 c2 = checkedCast richest c1 a ++ checkedCast richest c2 
 variableOffset :: [Declaration] -> Identifier -> Int
 variableOffset (Declaration ids t : rest) id = if findIndex (== id) ids == Nothing then
                                             (4 * length ids) + variableOffset rest id
-                                            else 4 * (fromJust (findIndex (== id) ids))
+                                            else 4 * fromJust (findIndex (== id) ids)
 variableOffset [] id = error ("attempted to lookup unknown identifier " ++ show id)
 
 --get the absolute location of a specific variable in data memory

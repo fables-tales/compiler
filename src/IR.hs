@@ -10,8 +10,8 @@ import ParserTypes
 --convert an expression to ir form, put result in second integer arg
 expToIr :: Expression -> [Declaration] -> Int -> Int -> ([IRForm],IRExpType)
 expToIr (TermConstant (IntegerLiteral a)) decs offest resultReg = ([LoadImmediateInt resultReg a], TInt)
-expToIr (TermConstant (RealLiteral a)) decs offset resultReg = ([LoadImmediateReal resultReg (a)],TReal)
-expToIr (TermVar (id)) decs offset resultReg = ([MemoryLoad resultReg ((variableOffset decs id) + offset)], getType decs id)
+expToIr (TermConstant (RealLiteral a)) decs offset resultReg = ([LoadImmediateReal resultReg a],TReal)
+expToIr (TermVar id) decs offset resultReg = ([MemoryLoad resultReg (variableOffset decs id + offset)], getType decs id)
 expToIr (Op a child1 child2) decs offset resultReg = let
                                                         c1Pair = expToIr child1 decs offset resultReg
                                                         c2Pair = expToIr child2 decs offset (resultReg + 1)
@@ -37,8 +37,8 @@ _toIrForm (Assign id exp : rest) stringTable decs = let
                                                     pair = expToIr exp decs dataOffset 0
                                                   in
                                            fst pair ++
-                                           (if snd pair == TReal && getType decs id == TInt then [RToI 0] else []) ++
-                                           (if snd pair == TInt && getType decs id == TReal then [IToR 0] else []) ++
+										   [RToI 0 | snd pair == TReal && getType decs id == TInt] ++
+										   [IToR 0 | snd pair == TInt && getType decs id == TReal] ++
                                            MemoryStore 0 (varLocation dataOffset decs id) :
                                            _toIrForm rest stringTable decs
 
