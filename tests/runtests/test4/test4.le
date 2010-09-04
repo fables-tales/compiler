@@ -1,0 +1,19 @@
+{test4: program to test assignment and integer variables.}
+{Already tested: write statements and integer and real constants.}
+program test4;
+var i, aninteger integer;
+    j integer;
+begin
+  i := 10023;
+  write(I);
+  writeln;
+  aninteger := i;
+  write(AnInteger);
+  writeln;
+  J := 76.5;
+  write(j);
+  writeln;
+  ANINTEGER := J;
+  write(aninteger);
+  writeln;
+end.
