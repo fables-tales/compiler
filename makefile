@@ -23,8 +23,12 @@ $(TMP_DIR):
 	mkdir -p $(TMP_DIR)
 	chmod 700 $(TMP_DIR)
 
-.PHONY: clean
+.PHONY: clean check
 clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf $(TMP_DIR)
 	rm -rf src/Parser.hs
+
+check:
+	./test.py
+	python testrun.py
