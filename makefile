@@ -11,11 +11,9 @@ src/Parser.hs: src/Parser.y
 
 $(BUILD_DIR)/lexerbin: $(BUILD_DIR) $(TMP_DIR) $(HASKELL) $(LEXER_MAIN)
 	ghc $(HASKELL) $(LEXER_MAIN) -o "$@" -tmpdir $(TMP_DIR)
-	rm src/*.hi src/*.o
 
 $(BUILD_DIR)/compiler: $(BUILD_DIR) $(TMP_DIR) $(HASKELL) $(COMPILER_MAIN)
 	ghc $(HASKELL) $(MAIN) -o "$@" -tmpdir $(TMP_DIR)
-	rm src/*.hi src/*.o
 
 $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
