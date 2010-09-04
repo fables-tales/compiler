@@ -29,3 +29,4 @@ clean:
 
 check: all
 	python testrun.py
+	./test.py
