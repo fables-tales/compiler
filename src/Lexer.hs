@@ -85,8 +85,7 @@ stringTokens = reverse ( sort [
                         ("program", TokenProgram),
                         ("integer", TokenINTEGER), ("real", TokenREAL),
                         (".", TokenDot),
-                        (",", TokenComma),
-                        ("e", TokenE)
+                        (",", TokenComma)
                ])
 
 --extracts a token from a string from the above simple strings map
@@ -130,10 +129,17 @@ getStringLiteral _ = (Nothing, 0)
 -- Int parameter is used for line counting
 _lexer :: String -> Int -> [Token]
 _lexer s lineCount | s == [] = []
-                  -- match simple string tokens
+                  -- match simple string tokens, but check we aren't squashing a better identifier
                   | fst (getTokenForString (map toLower s)) /= Nothing =
-                                                    let tokString = getTokenForString (map toLower s) in
-                                                    certain (fst tokString) : _lexer (drop (snd tokString) s) lineCount
+                                                    let
+                                                        tokString = getTokenForString (map toLower s)
+                                                        rest = drop (snd tokString) s
+                                                        start = take (snd tokString) s
+                                                        id = span isAlphaNum (start ++ rest)
+                                                    in
+                                                    if (length . fst) id <= length start then
+                                                        certain (fst tokString) : _lexer (drop (snd tokString) s) lineCount
+                                                    else TokenIdentifier (map toLower (fst id)) : _lexer (snd id) lineCount
 
                   --skip newlines but increment linecount
                   | head s == '\n' = _lexer (drop 1 s) (lineCount + 1)
@@ -151,7 +157,11 @@ _lexer s lineCount | s == [] = []
                   -- integer constant
                   | isDigit (head s) = let x = span isDigit s in
                                         let y = span (=='0') s in
-                                            TokenLeadingZeros ((length . fst) y) : TokenIntLiteral (read (fst x) :: Int) : _lexer (snd x) lineCount
+                                            TokenLeadingZeros ((length . fst) y) :
+                                            TokenIntLiteral (read (fst x) :: Int) :
+                                            (if (toLower . head . snd) x `elem` "e" then
+                                                TokenE : _lexer (drop 1 (snd x)) lineCount
+                                             else _lexer (snd x) lineCount)
 
                   -- lex string literal
                   | getStringLiteral s /= (Nothing, 0) = let x = getStringLiteral s in
@@ -191,7 +201,6 @@ _killLeadingZeros (TokenLeadingZeros zeros : TokenIntLiteral b : rest) = TokenIn
 _killLeadingZeros (TokenLeadingZeros a : rest) = error "zeros found somewhere they shouldn't be"
 _killLeadingZeros (a : rest) = a : _killLeadingZeros rest
 _killLeadingZeros [] = []
-
 
 --lex real numbers to real tokens
 lexreals :: [Token] -> [Token]
