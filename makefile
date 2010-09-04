@@ -27,3 +27,4 @@ $(TMP_DIR):
 clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf $(TMP_DIR)
+	rm -rf src/Parser.hs
