@@ -25,7 +25,7 @@ sizeAdd str size = length str + size + 1
 
 --the round size fo a data table
 roundDataSize :: Int -> [IRForm] -> [IRForm]
-roundDataSize round values = (replicate (round - (length values `mod` round)) (DataPseudo 0))
+roundDataSize round values = values ++ (replicate (round - (length values `mod` round)) (DataPseudo 0))
 
 --gets the size of the string section, use to offset declarations
 stringSectionSize :: [((String, Int), [IRForm])] -> Int
@@ -38,4 +38,4 @@ toIRExpType IntType = TInt
 
 --writes a table to irform
 writeTable :: [((String, Int), [IRForm])] -> [IRForm]
-writeTable a = let tbl = concatMap snd a in tbl ++ roundDataSize 4 tbl
+writeTable a = let tbl = concatMap snd a in roundDataSize 4 tbl
