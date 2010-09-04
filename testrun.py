@@ -5,6 +5,7 @@ import sys
 tests = ["test1","hello","test2", "test3","test4", "test5"]
 
 def do_run_test(test):
+    print "running test '" + test + "'"
     test_root = os.path.join("tests","runtests",test)
     input_path = os.path.join(test_root,test) + ".le"
     output_path = input_path + ".ass"
@@ -22,7 +23,7 @@ def do_run_test(test):
 
     #if we fail, print an error
     if (result != 0):
-        print "test \"%s\" failed" % test
+        print "failed\n"
         success = 1
     return success
 
