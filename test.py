@@ -23,7 +23,9 @@ if __name__ == "__main__":
     "tests/passall/test3.le"
     ]
     for test in tests:
-        assert subprocess.call(["./build/lexerbin", test]) == 0
-        assert subprocess.call(["./build/parserbin", test]) == 0
-        assert subprocess.call(["./build/semanticsbin", test]) == 0
-        assert subprocess.call(["./build/compiler", test]) == 0
+        print test
+        assert subprocess.call(["./build/lexerbin", test],stdout=subprocess.PIPE) == 0
+        assert subprocess.call(["./build/parserbin", test],stdout=subprocess.PIPE) == 0
+        assert subprocess.call(["./build/semanticsbin", test],stdout=subprocess.PIPE) == 0
+        assert subprocess.call(["./build/compiler", test],stdout=subprocess.PIPE) == 0
+
