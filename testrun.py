@@ -2,7 +2,7 @@ import subprocess
 import os
 import sys
 
-tests = ["test1","hello"]
+tests = ["test1","hello","test2"]
 
 def do_run_test(test):
     test_root = os.path.join("tests","runtests",test)
