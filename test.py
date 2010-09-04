@@ -3,31 +3,27 @@ import subprocess
 
 
 if __name__ == "__main__":
-    tests = ["tests/lex/pass/hello.le",
-    "tests/lex/pass/testa.le",
-    "tests/lex/pass/testb.le",
-    "tests/lex/pass/testc.le",
-    "tests/lex/pass/test7.le",
-    "tests/lex/pass/testf.le",
-    "tests/lex/pass/test4.le",
-    "tests/lex/pass/test0.le",
-    "tests/lex/pass/hello.le",
-    "tests/lex/pass/test6.le",
-    "tests/lex/pass/test5.le",
-    "tests/lex/pass/test8.le",
-    "tests/lex/pass/testd.le",
-    "tests/lex/pass/test1.le",
-    "tests/lex/pass/testg.le",
-    "tests/lex/pass/teste.le",
-    "tests/lex/pass/test2.le",
-    "tests/lex/pass/test3.le"
+    tests = ["tests/passall/hello.le",
+    "tests/passall/testa.le",
+    "tests/passall/testb.le",
+    "tests/passall/testc.le",
+    "tests/passall/test7.le",
+    "tests/passall/testf.le",
+    "tests/passall/test4.le",
+    "tests/passall/test0.le",
+    "tests/passall/hello.le",
+    "tests/passall/test6.le",
+    "tests/passall/test5.le",
+    "tests/passall/test8.le",
+    "tests/passall/testd.le",
+    "tests/passall/test1.le",
+    "tests/passall/testg.le",
+    "tests/passall/teste.le",
+    "tests/passall/test2.le",
+    "tests/passall/test3.le"
     ]
     for test in tests:
         assert subprocess.call(["./build/lexerbin", test]) == 0
-
-    fails = [
-            "tests/lex/fail/fail1.le",
-            "tests/lex/fail/fail2.le"
-            ]
-    for fail in fails:
-        assert subprocess.call(["./build/lexerbin", fail]) != 0
+        assert subprocess.call(["./build/parserbin", test]) == 0
+        assert subprocess.call(["./build/semanticsbin", test]) == 0
+        assert subprocess.call(["./build/compiler", test]) == 0
