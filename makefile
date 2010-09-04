@@ -29,6 +29,5 @@ clean:
 	rm -rf $(TMP_DIR)
 	rm -rf src/Parser.hs
 
-check:
-	./test.py
+check: all
 	python testrun.py
