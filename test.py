@@ -10,7 +10,6 @@ if __name__ == "__main__":
     "tests/passall/test7.le",
     "tests/passall/testf.le",
     "tests/passall/test4.le",
-    "tests/passall/test0.le",
     "tests/passall/hello.le",
     "tests/passall/test6.le",
     "tests/passall/test5.le",
