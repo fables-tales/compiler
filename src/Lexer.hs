@@ -155,6 +155,7 @@ _lexer s lineCount | s == [] = []
                                         TokenIdentifier (map toLower (fst x)) : _lexer (snd x) lineCount
 
                   -- integer constant
+                  -- TODO: find a better way to lex e tokens, atm it's a bit of a hack
                   | isDigit (head s) = let x = span isDigit s in
                                         let y = span (=='0') s in
                                             TokenLeadingZeros ((length . fst) y) :
