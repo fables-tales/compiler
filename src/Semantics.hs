@@ -4,8 +4,6 @@ import Maybe
 
 import ParserTypes
 
---TODO: replace add/div/mul/sub with binop, seriously
-
 --unrwap an identifier
 unwrapIdentifier :: Identifier -> String
 unwrapIdentifier (VarIdentifier a) = a
