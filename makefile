@@ -37,5 +37,5 @@ clean:
 	rm -rf src/Parser.hs
 
 check: all
-	python testrun.py
 	./test.py
+	python testrun.py
