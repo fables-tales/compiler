@@ -78,7 +78,7 @@ _foldNegation (TermConstant a) = TermConstant a
 --verifies that we can specify integers in 32 bits
 --note: returns true if there is an error
 _verifyConstants :: Expression -> Bool
-_verifyConstants (TermConstant (IntegerLiteral a)) = (a >= (2^31-1) || a <= (-(2^31)))
+_verifyConstants (TermConstant (IntegerLiteral a)) = a >= (2^31-1) || a <= (-(2^31))
 _verifyConstants (TermVar a) = False
 _verifyConstants (Op a e1 e2) = _verifyConstants e1 || _verifyConstants e2
 _verifyConstants (TermConstant (RealLiteral a)) = False
@@ -103,8 +103,8 @@ _mapCmp f (Comparison rel e1 e2) = [(f e1),(f e2)]
 --maps function over all the expressions in the program, no tree heirarchy is maintained
 --useful for analytics over the entire program
 _mapOverExpressions :: (Expression -> a) -> [Statement] -> [a]
-_mapOverExpressions f (Assign id exp : rest) = (f exp) : _mapOverExpressions f rest
-_mapOverExpressions f (WriteExp e : rest) = (f e) : _mapOverExpressions f rest
+_mapOverExpressions f (Assign id exp : rest) = f exp : _mapOverExpressions f rest
+_mapOverExpressions f (WriteExp e : rest) = f e : _mapOverExpressions f rest
 _mapOverExpressions f (If cmp statements : rest) = _mapCmp f cmp ++ _mapOverExpressions f statements ++ _mapOverExpressions f rest
 _mapOverExpressions f (IfElse cmp s1 s2 : rest)  = _mapCmp f cmp ++ _mapOverExpressions f s1 ++ _mapOverExpressions f s2 ++ _mapOverExpressions f rest
 _mapOverExpressions f (RepeatUntil cmp statements : rest) = _mapCmp f cmp ++ _mapOverExpressions f statements ++ _mapOverExpressions f rest
@@ -112,10 +112,10 @@ _mapOverExpressions f (a : rest) = _mapOverExpressions f rest
 _mapOverExpressions f [] = []
 
 defaultTransform :: [Statement] -> [Statement]
-defaultTransform statements = _transformExpressions  (_foldNegation) statements
+defaultTransform = _transformExpressions  _foldNegation
 
 --returns true if the semantics of the program are valid, false otherwise
 verifySemantics :: Program -> Bool
 verifySemantics (Program pname (Block decs statements)) = let transformedStatements = defaultTransform statements in
 														      not (tableCheck (buildSymbolTable decs) transformedStatements) &&
-															  (not . or) (_mapOverExpressions (_verifyConstants) transformedStatements)
+															  (not . or) (_mapOverExpressions _verifyConstants transformedStatements)
