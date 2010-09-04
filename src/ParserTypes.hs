@@ -1,4 +1,5 @@
 module ParserTypes where
+import Lexer
 
 data Program = Program String Block deriving (Show, Read, Eq)
 
@@ -30,6 +31,7 @@ data Expression = Op BinOp Expression Expression |
 data NumberLiteral = RealLiteral Float | IntegerLiteral Int deriving (Show, Read, Eq)
 
 _negate :: Expression -> Expression
-_negate a = Op Multiply (TermConstant (IntegerLiteral (-1))) a
+_negate = Op Multiply (TermConstant (IntegerLiteral (-1)))
 
-parseError a = error (show (head a))
+parseError :: [Token] -> a
+parseError = error . show . head
