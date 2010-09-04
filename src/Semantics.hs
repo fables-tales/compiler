@@ -78,7 +78,7 @@ _foldNegation (TermConstant a) = TermConstant a
 --verifies that we can specify integers in 32 bits
 --note: returns true if there is an error
 _verifyConstants :: Expression -> Bool
-_verifyConstants (TermConstant (IntegerLiteral a)) = a >= (2^31-1) || a <= (-(2^31))
+_verifyConstants (TermConstant (IntegerLiteral a)) = a > (2^31-1) || a < (-(2^31))
 _verifyConstants (TermVar a) = False
 _verifyConstants (Op a e1 e2) = _verifyConstants e1 || _verifyConstants e2
 _verifyConstants (TermConstant (RealLiteral a)) = False
