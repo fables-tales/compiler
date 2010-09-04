@@ -11,5 +11,5 @@ data IRForm = WriteInt {register :: Int} | WriteReal {register :: Int}
               | IRSub {r1,r2,r3 :: Int}
               deriving (Show, Read, Eq)
 
-data IRExpType = TInt | TReal deriving (Show, Read, Eq)
+data IRExpType = TInt | TReal deriving (Show, Read, Eq, Ord)
 
