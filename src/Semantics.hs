@@ -97,7 +97,7 @@ _transformExpressions f (a : rest) = a : _transformExpressions f rest
 _transformExpressions f [] = []
 
 _mapCmp :: (Expression -> a) -> Comparison -> [a]
-_mapCmp f (Comparison rel e1 e2) = [(f e1),(f e2)]
+_mapCmp f (Comparison rel e1 e2) = [f e1,f e2]
 
 --maps function over all the expressions in the program, no tree heirarchy is maintained
 --useful for analytics over the entire program
@@ -116,5 +116,6 @@ defaultTransform = _transformExpressions  _foldNegation
 --returns true if the semantics of the program are valid, false otherwise
 verifySemantics :: Program -> (Bool,Program)
 verifySemantics (Program pname (Block decs statements)) = let transformedStatements = defaultTransform statements in
-														      ((not (tableCheck (buildSymbolTable decs) transformedStatements) &&
-															  (not . or) (_mapOverExpressions _verifyConstants transformedStatements)), Program pname (Block decs transformedStatements))
+														      (not (tableCheck (buildSymbolTable decs) transformedStatements) &&
+															  (not . or) (_mapOverExpressions _verifyConstants transformedStatements),
+															  Program pname (Block decs transformedStatements))

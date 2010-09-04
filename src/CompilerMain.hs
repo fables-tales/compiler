@@ -9,6 +9,6 @@ import Semantics
 
 main :: IO()
 main = do args <- getArgs;
-		  contents <- readFile (head (args));
+		  contents <- readFile (head args);
           let semanticPair = (verifySemantics . camleParser . lexer) contents;
-          if fst semanticPair == True then putStrLn ((toAssembly . toIrForm) (snd semanticPair)) else error "bad program semantics"
+          if fst semanticPair then putStrLn ((toAssembly . toIrForm) (snd semanticPair)) else error "bad program semantics"

@@ -195,9 +195,9 @@ _killLeadingZeros [] = []
 
 --lex real numbers to real tokens
 lexreals :: [Token] -> [Token]
-lexreals (TokenIntLiteral a : TokenDot : TokenLeadingZeros zeros : TokenIntLiteral b : TokenE : TokenMinus : TokenIntLiteral c : rest) = TokenRealLiteral ((computeFloat a b * (exp10 ((-c)-zeros)))) : lexreals rest
-lexreals (TokenIntLiteral a : TokenDot : TokenLeadingZeros zeros : TokenIntLiteral b : TokenE : TokenIntLiteral c : rest) = TokenRealLiteral (computeFloat a b * (exp10 (c-zeros))) : lexreals rest
-lexreals (TokenIntLiteral a : TokenDot : TokenLeadingZeros zeros : TokenIntLiteral b : rest) = TokenRealLiteral ((computeFloat a b) / (exp10 zeros)) : lexreals rest
+lexreals (TokenIntLiteral a : TokenDot : TokenLeadingZeros zeros : TokenIntLiteral b : TokenE : TokenMinus : TokenIntLiteral c : rest) = TokenRealLiteral (computeFloat a b * exp10 ((-c)-zeros)) : lexreals rest
+lexreals (TokenIntLiteral a : TokenDot : TokenLeadingZeros zeros : TokenIntLiteral b : TokenE : TokenIntLiteral c : rest) = TokenRealLiteral (computeFloat a b * exp10 (c-zeros)) : lexreals rest
+lexreals (TokenIntLiteral a : TokenDot : TokenLeadingZeros zeros : TokenIntLiteral b : rest) = TokenRealLiteral (computeFloat a b / exp10 zeros) : lexreals rest
 lexreals [] = []
 lexreals (a : rest) = a : lexreals rest
 
