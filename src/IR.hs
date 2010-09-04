@@ -31,22 +31,40 @@ getType [] id = error ("attempted to lookup unknown identifier " ++ show id)
 selectRichestType :: IRExpType -> IRExpType -> IRExpType
 selectRichestType a b = if TReal `elem` [a,b] then TReal else TInt
 
-irForOp :: BinOp -> Int -> IRForm
-irForOp Add a = IRAdd a a (a+1)
-irForOp Divide a = IRDiv a a (a+1)
-irForOp Subtract a = IRSub a a (a+1)
-irForOp Multiply a = IRMul a a (a+1)
+checkedCast :: IRExpType -> IRExpType -> Int -> [IRForm]
+checkedCast richest t reg = if richest > t then [IToR reg] else []
+
+irOperations :: [((BinOp,IRExpType),MathOp)]
+irOperations = [
+            ((Add,TReal),AddReal),
+            ((Divide,TReal),DivReal),
+            ((Multiply,TReal),MulReal),
+            ((Subtract,TReal),SubReal),
+            ((Add,TInt),AddInt),
+            ((Divide,TInt),DivInt),
+            ((Multiply,TInt),MulInt),
+            ((Subtract,TInt),SubInt)
+          ]
+
+typedOpFor :: IRExpType -> BinOp -> Int -> Int -> Int -> IRForm
+typedOpFor t op a b c = let opType = (op,t) in DoMath ((snd . fromJust) (find (( == opType) . fst) irOperations)) a b c
+
+irForOp :: BinOp -> Int -> IRExpType -> IRExpType -> IRExpType -> [IRForm]
+irForOp op a richest c1 c2 = checkedCast richest c1 a ++ checkedCast richest c2 (a+1) ++ [typedOpFor richest op a a (a+1)]
 
 --convert an expression to ir form, put result in second integer arg
 expToIr :: Expression -> [Declaration] -> Int -> Int -> ([IRForm],IRExpType)
 expToIr (TermConstant (IntegerLiteral a)) decs offest resultReg = ([LoadImmediateInt resultReg a], TInt)
-expToIr (TermConstant (RealLiteral a)) decs offset resultReg = ([LoadImmediateReal resultReg a],TReal)
+expToIr (TermConstant (RealLiteral a)) decs offset resultReg = ([LoadImmediateReal resultReg (a)],TReal)
 expToIr (TermVar (id)) decs offset resultReg = ([MemoryLoad resultReg ((variableOffset decs id) + offset)], getType decs id)
 expToIr (Op a child1 child2) decs offset resultReg = let
                                                         c1Pair = expToIr child1 decs offset resultReg
                                                         c2Pair = expToIr child2 decs offset (resultReg + 1)
+                                                        richest = selectRichestType (snd c1Pair) (snd c2Pair)
                                                      in
-                                                        (fst c1Pair ++ fst c2Pair ++ [irForOp a resultReg], selectRichestType (snd c1Pair) (snd c2Pair))
+                                                        (fst c1Pair ++
+                                                         fst c2Pair ++
+                                                         irForOp a resultReg richest (snd c1Pair) (snd c2Pair), richest)
 
 --get the offset from the base of the declaration section of a specific identifier
 variableOffset :: [Declaration] -> Identifier -> Int
@@ -102,10 +120,7 @@ _toAssembly (MemoryStore reg addr : rest) = let spare = findSpareReg reg in zero
 _toAssembly (MemoryLoad reg addr : rest) = let spare = findSpareReg reg in zero spare ++ "\nLOAD " ++ regToString reg ++ " " ++ regToString spare ++ " " ++ show addr ++ "\n" ++ _toAssembly rest
 _toAssembly (IToR reg : rest) = "ITOR " ++ regToString reg ++ " " ++ regToString reg ++ "\n" ++ _toAssembly rest
 _toAssembly (RToI reg : rest) = "RTOI " ++ regToString reg ++ " " ++ regToString reg ++ "\n" ++ _toAssembly rest
-_toAssembly (IRAdd a b c : rest) = "ADD" ++ regToString a ++ " " ++ regToString b ++ " " ++ regToString c ++ "\n" ++ _toAssembly rest
-_toAssembly (IRSub a b c : rest) = "SUB" ++ regToString a ++ " " ++ regToString b ++ " " ++ regToString c ++ "\n" ++ _toAssembly rest
-_toAssembly (IRMul a b c : rest) = "MUL" ++ regToString a ++ " " ++ regToString b ++ " " ++ regToString c ++ "\n" ++ _toAssembly rest
-_toAssembly (IRDiv a b c : rest) = "DIV" ++ regToString a ++ " " ++ regToString b ++ " " ++ regToString c ++ "\n" ++ _toAssembly rest
+_toAssembly (DoMath op a b c : rest) = toAsm op ++ " " ++ regToString a ++ " " ++ regToString b ++ " " ++ regToString c ++ "\n" ++ _toAssembly rest
 _toAssembly [] = []
 
 --returns an integer that is not the passed one

@@ -1,4 +1,7 @@
 module IRHelpers where
+import Data.Maybe
+import Data.List
+
 import IRTypes
 import ParserTypes
 
@@ -39,3 +42,18 @@ toIRExpType IntType = TInt
 --writes a table to irform
 writeTable :: [((String, Int), [IRForm])] -> [IRForm]
 writeTable a = let tbl = concatMap snd a in roundDataSize 4 tbl
+
+asmMapping :: [(MathOp,String)]
+asmMapping = [
+                (AddReal, "ADDR"),
+                (SubReal, "SUBR"),
+                (MulReal, "MULR"),
+                (DivReal, "DIVR"),
+                (AddInt, "ADD"),
+                (SubInt, "SUB"),
+                (MulInt, "MUL"),
+                (DivInt, "DIV")
+             ]
+
+toAsm :: MathOp -> String
+toAsm op = (snd . fromJust) (find ((== op) . fst) asmMapping)
