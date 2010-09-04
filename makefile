@@ -7,7 +7,7 @@ TMP_DIR = "/tmp/compilerponies"
 all: src/Parser.hs $(BUILD_DIR)/lexerbin $(BUILD_DIR)/compiler
 
 src/Parser.hs: src/Parser.y
-	happy src/Parser.y -o "$@"
+	happy src/Parser.y -o "$@" -iparser.log
 
 $(BUILD_DIR)/lexerbin: $(BUILD_DIR) $(TMP_DIR) $(HASKELL) $(LEXER_MAIN)
 	ghc $(HASKELL) $(LEXER_MAIN) -o "$@" -tmpdir $(TMP_DIR)
