@@ -17,11 +17,11 @@ allocateDeclarations [] = []
 
 --prints an int as 'R' + int for register usage
 regToString :: Int -> String
-regToString a = 'R' : show a
+regToString reg = 'R' : show reg
 
 --produces instructions to zero a register
 zero :: Int -> String
-zero a = "\nXOR " ++ regToString a ++ " " ++ regToString a ++ " " ++ regToString a
+zero reg = "\nXOR " ++ regToString reg ++ " " ++ regToString reg ++ " " ++ regToString reg
 
 --compute the size of a serialized string
 sizeAdd :: String -> Int -> Int
@@ -33,7 +33,7 @@ roundDataSize round values = values ++ replicate (round - (length values `mod` r
 
 --gets the size of the string section, use to offset declarations
 stringSectionSize :: [((String, Int), [IRForm])] -> Int
-stringSectionSize a = length (roundDataSize 4 (concatMap snd a))
+stringSectionSize stringTable = length (roundDataSize 4 (concatMap snd stringTable))
 
 --convert a type to an IRIRExpType
 toIRExpType :: Type -> IRExpType
@@ -71,7 +71,7 @@ dataMapTable _ _ = []
 
 --gets the location of a string literal in the data table
 findStringLocation :: [((String, Int), [IRForm])] -> String -> Int
-findStringLocation table a = let triple = find ((== a) . fst . fst) table in
+findStringLocation stringTable string = let triple = find ((== string) . fst . fst) stringTable in
                         if triple == Nothing then -1
                         else let certainTriple = fromJust triple in (snd . fst) certainTriple
 
