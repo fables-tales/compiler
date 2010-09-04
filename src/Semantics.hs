@@ -1,12 +1,13 @@
 module Semantics where
 import List
 import Maybe
+import Data.Char
 
 import ParserTypes
 
 --unrwap an identifier
 unwrapIdentifier :: Identifier -> String
-unwrapIdentifier (VarIdentifier a) = a
+unwrapIdentifier (VarIdentifier a) = map toLower a
 
 --associate a type with an identifier
 addType :: Type -> Identifier -> (String, Type)
