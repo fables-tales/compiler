@@ -3,113 +3,89 @@ import ParserTypes
 import Data.Char
 import Data.Maybe
 import Data.List
-
-data IRForm = WriteInt {register :: Int} | WriteReal {register :: Int}
-              | LoadImmediateInt {register,value :: Int} | LoadImmediateReal {register :: Int, fvalue :: Float}
-              | WriteString {location :: Int} | DataPseudo Int | Halt | MemoryStore {reg,memoryAddr :: Int}
-              | MemoryLoad {reg,memoryAddr :: Int} | IToR {reg :: Int} | RToI {reg :: Int} deriving (Show, Read, Eq)
-
-
-data ExpType = TInt | TReal deriving (Show, Read, Eq)
-
---compute the size of a serialized string
-sizeAdd :: String -> Int -> Int
-sizeAdd str size = length str + size + 1
+import IRHelpers
+import IRTypes
 
 --convert a string to data pesudo instructions
 serializeString :: String -> [IRForm]
 serializeString str = map (DataPseudo . ord) str ++ [DataPseudo 0]
 
---first pass over tree to generate string literal data section
+--first pass over tree to generate string literal section
 dataMapTable :: [Statement] -> Int -> [((String, Int), [IRForm])]
 dataMapTable (WriteS str : rest) size = ((str,size),serializeString str) : dataMapTable rest (sizeAdd str size)
 dataMapTable _ _ = []
 
 --gets the location of a string literal in the data table
-findLocation :: [((String, Int), [IRForm])] -> String -> Int
-findLocation table a = let triple = find ((== a) . fst . fst) table in
+findStringLocation :: [((String, Int), [IRForm])] -> String -> Int
+findStringLocation table a = let triple = find ((== a) . fst . fst) table in
                         if triple == Nothing then -1
                         else let certainTriple = fromJust triple in (snd . fst) certainTriple
 
---the round size fo a data table
-roundDataSize :: Int -> [IRForm] -> [IRForm]
-roundDataSize round values = values ++ (replicate (round - (length values `mod` round)) (DataPseudo 0))
-
---offset for variable section in data memory
-varOffset :: [((String, Int), [IRForm])] -> Int
-varOffset a = length (roundDataSize 4 (concatMap snd a))
-
-toExpType :: Type -> ExpType
-toExpType RealType = TReal
-toExpType IntType = TInt
-
---writes a table to irform
-writeTable :: [((String, Int), [IRForm])] -> [IRForm]
-writeTable a = let tbl = concatMap snd a in tbl ++ roundDataSize 4 tbl
-
 --gets the type of a specific variable
-getType :: [Declaration] -> Identifier -> ExpType
+getType :: [Declaration] -> Identifier -> IRExpType
 getType (Declaration ids t : rest) id = if (find (== id) ids == Nothing) then
-                                        getType rest id else (toExpType t)
+                                        getType rest id else (toIRExpType t)
 getType [] id = error ("attempted to lookup unknown identifier " ++ show id)
 
---convert an expression to ir form, always put the result in register 0
-expToIr :: Expression -> [Declaration] -> Int -> ([IRForm],ExpType)
-expToIr (TermConstant (IntegerLiteral a)) decs offest = ([LoadImmediateInt 0 a], TInt)
-expToIr (TermConstant (RealLiteral a)) decs offset = ([LoadImmediateReal 0 a],TReal)
-expToIr (TermVar (id)) decs offset = ([MemoryLoad 0 ((decOffset decs id) + offset)], getType decs id)
+--selects treal if either is treal, else int
+selectRichestType :: IRExpType -> IRExpType -> IRExpType
+selectRichestType a b = if TReal `elem` [a,b] then TReal else TInt
 
---offset of a specific identifier in the declaration section
-decOffset :: [Declaration] -> Identifier -> Int
-decOffset (Declaration ids t : rest) id = if findIndex (== id) ids == Nothing then
-                                            (4 * length ids) + decOffset rest id
+irForOp :: BinOp -> Int -> IRForm
+irForOp Add a = IRAdd a a (a+1)
+irForOp Divide a = IRDiv a a (a+1)
+irForOp Subtract a = IRSub a a (a+1)
+irForOp Multiply a = IRMul a a (a+1)
+
+--convert an expression to ir form, put result in second integer arg
+expToIr :: Expression -> [Declaration] -> Int -> Int -> ([IRForm],IRExpType)
+expToIr (TermConstant (IntegerLiteral a)) decs offest resultReg = ([LoadImmediateInt resultReg a], TInt)
+expToIr (TermConstant (RealLiteral a)) decs offset resultReg = ([LoadImmediateReal resultReg a],TReal)
+expToIr (TermVar (id)) decs offset resultReg = ([MemoryLoad resultReg ((variableOffset decs id) + offset)], getType decs id)
+expToIr (Op a child1 child2) decs offset resultReg = let
+                                                        c1Pair = expToIr child1 decs offset resultReg
+                                                        c2Pair = expToIr child2 decs offset (resultReg + 1)
+                                                     in
+                                                        (fst c1Pair ++ fst c2Pair ++ [irForOp a resultReg], selectRichestType (snd c1Pair) (snd c2Pair))
+
+--get the offset from the base of the declaration section of a specific identifier
+variableOffset :: [Declaration] -> Identifier -> Int
+variableOffset (Declaration ids t : rest) id = if findIndex (== id) ids == Nothing then
+                                            (4 * length ids) + variableOffset rest id
                                             else 4 * (fromJust (findIndex (== id) ids))
-decOffset [] id = error ("attempted to lookup unknown identifier " ++ show id)
+variableOffset [] id = error ("attempted to lookup unknown identifier " ++ show id)
 
---get the location of a variable
+--get the absolute location of a specific variable in data memory
 varLocation :: Int -> [Declaration] -> Identifier -> Int
-varLocation tableSize decs id = tableSize + decOffset decs id
+varLocation stringSectionSize decs id = stringSectionSize + variableOffset decs id
 
 --convert array of statements to ir form
 _toIrForm :: [Statement] -> [((String, Int), [IRForm])] -> [Declaration] -> [IRForm]
 
-_toIrForm (WriteExp a : rest) dataTable decs = let irPair = expToIr a decs (varOffset dataTable) in
+_toIrForm (WriteExp a : rest) stringTable decs = let irPair = expToIr a decs (stringSectionSize stringTable) 0 in
                                             fst irPair
                                             ++ (if snd irPair == TReal then WriteReal 0 else WriteInt 0)
-                                            :  _toIrForm rest dataTable decs
+                                            :  _toIrForm rest stringTable decs
 
-_toIrForm (WriteLn : rest) dataTable decs = WriteString 0 : _toIrForm rest dataTable decs
-_toIrForm (WriteS s : rest) dataTable decs = WriteString (findLocation dataTable s) : _toIrForm rest dataTable decs
+_toIrForm (WriteLn : rest) stringTable decs = WriteString 0 : _toIrForm rest stringTable decs
+_toIrForm (WriteS s : rest) stringTable decs = WriteString (findStringLocation stringTable s) : _toIrForm rest stringTable decs
 
-_toIrForm (Assign id exp : rest) dataTable decs = let
-                                                    vOff = varOffset dataTable
-                                                    pair = expToIr exp decs vOff
+_toIrForm (Assign id exp : rest) stringTable decs = let
+                                                    dataOffset = stringSectionSize stringTable
+                                                    pair = expToIr exp decs dataOffset 0
                                                   in
                                            fst pair ++
                                            (if snd pair == TReal && getType decs id == TInt then [RToI 0] else []) ++
                                            (if snd pair == TInt && getType decs id == TReal then [IToR 0] else []) ++
-                                           MemoryStore 0 (varLocation vOff decs id) :
-                                           _toIrForm rest dataTable decs
+                                           MemoryStore 0 (varLocation dataOffset decs id) :
+                                           _toIrForm rest stringTable decs
 
-_toIrForm (a : rest) dataTable decs = _toIrForm rest dataTable decs
-_toIrForm [] dataTable decs = Halt : writeTable dataTable ++ allocateDeclarations decs
-
-_produceData :: Identifier -> [IRForm]
-_produceData id = [DataPseudo 0, DataPseudo 0, DataPseudo 0, DataPseudo 0]
-
-allocateDeclarations :: [Declaration] -> [IRForm]
-allocateDeclarations (Declaration ids t : rest) = concatMap _produceData ids ++ allocateDeclarations rest
-allocateDeclarations [] = []
+_toIrForm (a : rest) stringTable decs = _toIrForm rest stringTable decs
+_toIrForm [] stringTable decs = Halt : writeTable stringTable ++ allocateDeclarations decs
 
 --convert program to ir form
 toIrForm :: Program -> [IRForm]
 toIrForm (Program name (Block decs statements)) = _toIrForm statements ((("\n",0),[DataPseudo 10, DataPseudo 0]) : dataMapTable statements 2) decs
-
-regToString :: Int -> String
-regToString a = 'R' : show a
-
-zero :: Int -> String
-zero a = "\nXOR " ++ regToString a ++ " " ++ regToString a ++ " " ++ regToString a
 
 _toAssembly :: [IRForm] -> String
 _toAssembly ((WriteInt {register = a}) : rest) = ";writing register r" ++ show a ++ "\nWR " ++ regToString a ++ "\n" ++ _toAssembly rest
@@ -126,6 +102,10 @@ _toAssembly (MemoryStore reg addr : rest) = let spare = findSpareReg reg in zero
 _toAssembly (MemoryLoad reg addr : rest) = let spare = findSpareReg reg in zero spare ++ "\nLOAD " ++ regToString reg ++ " " ++ regToString spare ++ " " ++ show addr ++ "\n" ++ _toAssembly rest
 _toAssembly (IToR reg : rest) = "ITOR " ++ regToString reg ++ " " ++ regToString reg ++ "\n" ++ _toAssembly rest
 _toAssembly (RToI reg : rest) = "RTOI " ++ regToString reg ++ " " ++ regToString reg ++ "\n" ++ _toAssembly rest
+_toAssembly (IRAdd a b c : rest) = "ADD" ++ regToString a ++ " " ++ regToString b ++ " " ++ regToString c ++ "\n" ++ _toAssembly rest
+_toAssembly (IRSub a b c : rest) = "SUB" ++ regToString a ++ " " ++ regToString b ++ " " ++ regToString c ++ "\n" ++ _toAssembly rest
+_toAssembly (IRMul a b c : rest) = "MUL" ++ regToString a ++ " " ++ regToString b ++ " " ++ regToString c ++ "\n" ++ _toAssembly rest
+_toAssembly (IRDiv a b c : rest) = "DIV" ++ regToString a ++ " " ++ regToString b ++ " " ++ regToString c ++ "\n" ++ _toAssembly rest
 _toAssembly [] = []
 
 --returns an integer that is not the passed one
