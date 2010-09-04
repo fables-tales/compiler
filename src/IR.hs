@@ -1,10 +1,11 @@
 module IR where
-import ParserTypes
 import Data.Char
 import Data.Maybe
 import Data.List
+
 import IRHelpers
 import IRTypes
+import ParserTypes
 
 --convert an expression to ir form, put result in second integer arg
 expToIr :: Expression -> [Declaration] -> Int -> Int -> ([IRForm],IRExpType)
