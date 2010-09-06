@@ -8,7 +8,7 @@ def do_run_test(test):
     print "running test '" + test + "'"
     test_root = os.path.join("tests","runtests",test)
     input_path = os.path.join(test_root,test) + ".le"
-    output_path = input_path + ".ass"
+    output_path = input_path + ".ass.built"
     test_ass_path = input_path + ".test.ass"
 
     success = 0

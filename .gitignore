@@ -1,3 +1,5 @@
 *Parser.hs
 *.o
 *.hi
+*run.out
+*.ass.built
