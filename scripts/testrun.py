@@ -17,7 +17,7 @@ def do_run_test(test):
     output = open(os.path.join(test_root,"run.out"), "w")
 
     #verify run output matches expected
-    a = subprocess.call(["./testrun.sh", input_path,  output_path], stdout=output)
+    a = subprocess.call(["./scripts/testrun.sh", input_path,  output_path], stdout=output)
     output.close()
     result = subprocess.call(["diff",os.path.join(test_root,"run.out"),test_ass_path])
 
