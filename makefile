@@ -37,6 +37,6 @@ clean:
 	rm -rf src/Parser.hs
 
 check: all
-	./test.py
-	python testrun.py
-	./say "all tests completed successfully"
+	./scripts/test.py
+	python scripts/testrun.py
+	./scripts/say "all tests completed successfully"
