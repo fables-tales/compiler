@@ -33,7 +33,7 @@ roundDataSize round values = values ++ replicate (round - (length values `mod` r
 
 --gets the size of the string section, use to offset declarations
 stringSectionSize :: [((String, Int), [IRForm])] -> Int
-stringSectionSize stringTable = length (roundDataSize 4 (concatMap snd stringTable))
+stringSectionSize = length . roundDataSize 4 . concatMap snd
 
 --convert a type to an IRIRExpType
 toIRExpType :: Type -> IRExpType
