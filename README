@@ -1,5 +1,5 @@
 my compiler depends on
-    * haskell
+    * haskell (ghc >= 6.12.1)
     * happy
     * python 2.6 and greater (but not 3.0)
     * bash
