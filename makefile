@@ -39,3 +39,4 @@ clean:
 check: all
 	./test.py
 	python testrun.py
+	./say "all tests completed successfully"
