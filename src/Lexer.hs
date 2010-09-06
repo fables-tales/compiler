@@ -3,7 +3,7 @@ import Data.List
 import Data.Char
 
 isWhiteSpace :: Char -> Bool
-isWhiteSpace x = x `elem` "\n \t\r"
+isWhiteSpace = (`elem` "\n \t\r")
 
 matches :: Eq a =>a -> [a] -> Int
 matches a [] = 0
