@@ -64,6 +64,10 @@ toAsm op = (snd . fromJust) (find ((== op) . fst) asmMapping)
 serializeString :: String -> [IRForm]
 serializeString str = map (DataPseudo . ord) str ++ [DataPseudo 0]
 
+getNewSizeForTable :: [((String, Int), [IRForm])] -> Int -> Int
+getNewSizeForTable [] a = a
+getNewSizeForTable table a = sizeAdd ((fst . fst . last) table) ((snd . fst . last) table)
+
 --first pass over tree to generate string literal section
 dataMapTable :: [Statement] -> Int -> [((String, Int), [IRForm])]
 dataMapTable (WriteS str : rest) size = ((str,size),serializeString str) : dataMapTable rest (sizeAdd str size)
