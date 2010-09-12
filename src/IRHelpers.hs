@@ -72,7 +72,7 @@ dataMapTable _ _ = []
 --gets the location of a string literal in the data table
 findStringLocation :: [((String, Int), [IRForm])] -> String -> Int
 findStringLocation stringTable string = let triple = find ((== string) . fst . fst) stringTable in
-                        if triple == Nothing then -1
+                        if triple == Nothing then error "couldn't find string"
                         else let certainTriple = fromJust triple in (snd . fst) certainTriple
 
 --gets the type of a specific variable
