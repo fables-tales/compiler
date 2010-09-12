@@ -111,8 +111,11 @@ _mapOverExpressions f (RepeatUntil cmp statements : rest) = _mapCmp f cmp ++ _ma
 _mapOverExpressions f (a : rest) = _mapOverExpressions f rest
 _mapOverExpressions f [] = []
 
+_defaultTransform :: [Statement] -> [Statement]
+_defaultTransform = _transformExpressions  _foldNegation
+
 defaultTransform :: [Statement] -> [Statement]
-defaultTransform = _transformExpressions  _foldNegation
+defaultTransform tree = let nextTree = _defaultTransform tree in if nextTree == tree then tree else defaultTransform nextTree
 
 --returns true if the semantics of the program are valid, false otherwise
 verifySemantics :: Program -> (Bool,Program)
