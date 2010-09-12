@@ -71,7 +71,18 @@ getNewSizeForTable table a = sizeAdd ((fst . fst . last) table) ((snd . fst . la
 --first pass over tree to generate string literal section
 dataMapTable :: [Statement] -> Int -> [((String, Int), [IRForm])]
 dataMapTable (WriteS str : rest) size = ((str,size),serializeString str) : dataMapTable rest (sizeAdd str size)
-dataMapTable _ _ = []
+dataMapTable (If cmp statements : rest) size = let table = dataMapTable statements size in
+                                                table ++ dataMapTable rest (getNewSizeForTable table size)
+
+dataMapTable (IfElse cmp s1 s2 : rest) size = let
+                                                table1 = dataMapTable s1 size
+                                                table2 = dataMapTable s2 (getNewSizeForTable table1 size)
+                                              in table1 ++ table2 ++ dataMapTable rest (getNewSizeForTable table2 size)
+
+dataMapTable (RepeatUntil cmp s1 : rest) size = let table = dataMapTable s1 size in
+                                                table ++ dataMapTable rest (getNewSizeForTable table size)
+dataMapTable (a : rest) size = dataMapTable rest size
+dataMapTable [] size = []
 
 --gets the location of a string literal in the data table
 findStringLocation :: [((String, Int), [IRForm])] -> String -> Int
