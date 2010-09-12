@@ -1,0 +1,28 @@
+{test7: program to test conditionals.}
+{Already tested: write statements and integer and real constants.}
+program test7;
+begin
+  if 1 < 2 begin write(1); end;
+  if 2 > 3 begin write(2); end;
+  if 4 = 4 begin write(3); writeln; end
+  else begin write(4); writeln; end;
+  if 5 != 5 begin write(5); writeln; writeln; end
+  else begin write(6); writeln; writeln; end;
+  if 6 <= 7 begin write(7); end
+  else begin end;
+  if 8 >= 9 begin end
+  else begin write(8); end;
+  if 0.1 < 0.2 begin end
+  else begin write(9); end;
+  if 0.2 > 0.3 begin write('a'); end
+  else
+  begin
+    if 0.4 = 0.4 begin write('b'); end;
+  end;
+  if 0.5 != 6.0 
+  begin
+    if 0.7 <= 0.8 begin write('c'); end;
+    if 0.9 >= 1.0e-1 begin write('d'); end
+    else begin write('e'); end;
+  end;
+end.
