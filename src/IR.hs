@@ -22,6 +22,12 @@ expToIr (Op a child1 child2) decs offset resultReg = let
                                                          fst c2Pair ++
                                                          irForOp a resultReg richest (snd c1Pair) (snd c2Pair), richest)
 
+numLabels :: [IRForm] -> Int
+numLabels a = sum (map (\x -> if x == Label then 1 else 0) a)
+
+serializeComparison :: Comparison -> String -> String -> [IRForm]
+serializeComparison (Comparison rel e1 e2) labelTrue labelFalse = let actualComparison = getComparisonFor rel in if fst actualComparison then expToIr
+
 --convert array of statements to ir form
 _toIrForm :: [Statement] -> [((String, Int), [IRForm])] -> [Declaration] -> Int -> [IRForm]
 
@@ -48,7 +54,7 @@ _toIrForm (If comparison statements : rest) stringTable decs labelCount =
                                                             labelName = "if" ++ labelCount
                                                             ir = _toIrForm statements stringTable decs (labelCount + 1)
                                                          in
-                                                         serializeComparison comparison labelName ++
+                                                         serializeComparison comparison (labelName ++ "in") (labelName ++ "aft") ++
                                                          Label (labelName ++ "in") : ir ++
                                                          Label (labelName ++ "aft") : _toIrForm rest decs (labelCount + 1 + numLabels ir)
 
