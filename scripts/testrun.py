@@ -2,7 +2,7 @@ import subprocess
 import os
 import sys
 
-tests = ["test1","hello","test2", "test3","test4", "test5"]
+tests = ["test1","hello","test2", "test3","test4", "test5", "test7"]
 
 def do_run_test(test):
     print "running test '" + test + "'"
