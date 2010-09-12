@@ -137,3 +137,14 @@ varLocation stringSectionSize decs id = stringSectionSize + variableOffset decs 
 --used for finding a register for use that isn't occupied
 findSpareReg :: Int -> Int
 findSpareReg a = a + 1
+
+
+--opposite is a bit of a misnomer, it's whatever matches everything
+--the argument doesn't
+opposite :: Relation -> Relation
+opposite RelGreater = RelLessEq
+opposite RelGreaterEq = RelLess
+opposite RelEq = RelNeq
+opposite RelNeq = RelEq
+opposite RelLessEq = RelGreater
+opposite RelLess = RelGreaterEq
