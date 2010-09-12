@@ -81,6 +81,7 @@ _toAssembly (MemoryLoad reg addr : rest) = let spare = findSpareReg reg in zero 
 _toAssembly (IToR reg : rest) = "ITOR " ++ regToString reg ++ " " ++ regToString reg ++ "\n" ++ _toAssembly rest
 _toAssembly (RToI reg : rest) = "RTOI " ++ regToString reg ++ " " ++ regToString reg ++ "\n" ++ _toAssembly rest
 _toAssembly (DoMath op a b c : rest) = toAsm op ++ " " ++ regToString a ++ " " ++ regToString b ++ " " ++ regToString c ++ "\n" ++ _toAssembly rest
+_toAssembly (_ : rest) = _toAssembly rest
 _toAssembly [] = []
 
 
