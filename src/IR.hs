@@ -131,6 +131,12 @@ _toIrForm (RepeatUntil comparison smts : rest) stringTable decs labelCount =
                                                         serializeComparison comparison (labelName ++ "bef") True decs (stringSectionSize stringTable) ++
                                                         _toIrForm rest stringTable decs (labelCount + 1 + numLabels ir1)
 
+_toIrForm (Read id : rest) stringTable decs labelCount = let
+                                                            idType = getType decs id
+                                                            idLocation = varLocation (stringSectionSize stringTable) decs id
+                                                         in
+                                                         (if idType == TInt then ReadInt else ReadFloat) 0 idLocation : _toIrForm rest stringTable decs labelCount
+
 _toIrForm (a : rest) stringTable decs labelCount = _toIrForm rest stringTable decs labelCount
 _toIrForm [] stringTable decs labelCount = []
 
@@ -174,6 +180,8 @@ _toAssembly (DoMath op a b c : rest) = toAsm op ++ " " ++ regToString a ++ " " +
 _toAssembly (Br cond reg label : rest) = brAsm cond ++ " " ++  regToString reg ++ " " ++ label ++ "\n" ++  _toAssembly rest
 _toAssembly (Zero reg : rest) = zero reg ++ "\n" ++ _toAssembly rest
 _toAssembly (Label a : rest) = a ++ ":\n" ++ _toAssembly rest
+_toAssembly (ReadInt reg location : rest) = "RD " ++ regToString reg ++ "\n" ++ _toAssembly [MemoryStore reg location] ++ _toAssembly rest
+_toAssembly (ReadFloat reg location : rest) = "RDR " ++ regToString reg ++ "\n" ++ _toAssembly [MemoryStore reg location] ++ _toAssembly rest
 _toAssembly (_ : rest) = _toAssembly rest
 _toAssembly [] = []
 

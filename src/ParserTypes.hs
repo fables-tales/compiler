@@ -12,7 +12,7 @@ data Declaration = Declaration [Identifier] Type deriving (Show, Read, Eq)
 data Type = RealType | IntType deriving (Show, Read, Eq)
 
 data Statement = Assign Identifier Expression
-                 | Read Identifier | ReadInt Identifier | ReadReal Identifier
+                 | Read Identifier
                  | WriteExp Expression | WriteS String | WriteLn
                  | If Comparison [Statement] | IfElse Comparison [Statement] [Statement]
                  | RepeatUntil Comparison [Statement] deriving (Show, Read, Eq)

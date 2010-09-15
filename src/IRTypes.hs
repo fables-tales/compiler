@@ -12,6 +12,7 @@ data IRForm = WriteInt {register :: Int} | WriteReal {register :: Int}
               | Zero {reg :: Int}
               --condition to branch on and register to compare
               | Br {cond :: BrCondition, reg :: Int, label :: String}
+              | ReadFloat {reg,location :: Int} | ReadInt {reg,location :: Int}
               deriving (Show, Read, Eq)
 
 data BrCondition = LtZ | LtZR | GeqZ | GeqZR | EqZ | EqZR | NEqZ | NEqZR deriving (Show, Read, Eq)

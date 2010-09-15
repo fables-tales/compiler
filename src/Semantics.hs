@@ -58,15 +58,6 @@ verifySymbols (Program pname (Block decs statements)) = not (tableCheck (buildSy
 realIdentifier :: [(String, Type)] -> Identifier -> Bool
 realIdentifier table id = (snd . fromJust) (find ((== unwrapIdentifier id) . fst) table) == RealType
 
---replace reads with either ReadInt or ReadReal
-_replaceReads :: [(String, Type)] -> [Statement] -> [Statement]
-_replaceReads table (Read id : rest) = (if realIdentifier table id then ReadReal id else ReadInt id) : _replaceReads table rest
-_replaceReads table (If comp statements : rest) = If comp (_replaceReads table statements) : _replaceReads table rest
-_replaceReads table (IfElse comp s1 s2 : rest) = IfElse comp (_replaceReads table s1) (_replaceReads table s2) : _replaceReads table rest
-_replacereads table (RepeatUntil comp s1 : rest) = RepeatUntil comp (_replacereads table s1) : _replaceReads table rest
-_replacereads table (a : rest) = a : _replacereads table rest
-_replacereads table [] = []
-
 --replaces Mul -1 constant with -constant
 _foldNegation :: Expression -> Expression
 _foldNegation (Op Multiply (TermConstant (IntegerLiteral (-1))) (TermConstant (RealLiteral a))) = TermConstant (RealLiteral (-a))
