@@ -122,6 +122,15 @@ _toIrForm (IfElse comparison s1 s2 : rest) stringTable decs labelCount =
                                                         ++ Label (labelName ++ "aft") :
                                                         _toIrForm rest stringTable decs (labelCount + 1 + numLabels ir2)
 
+_toIrForm (RepeatUntil comparison smts : rest) stringTable decs labelCount =
+                                                        let
+                                                            labelName = "rep" ++ show labelCount
+                                                            ir1 = _toIrForm smts stringTable decs (labelCount + 1)
+                                                        in
+                                                        Label (labelName ++ "bef") : ir1 ++
+                                                        serializeComparison comparison (labelName ++ "bef") True decs (stringSectionSize stringTable) ++
+                                                        _toIrForm rest stringTable decs (labelCount + 1 + numLabels ir1)
+
 _toIrForm (a : rest) stringTable decs labelCount = _toIrForm rest stringTable decs labelCount
 _toIrForm [] stringTable decs labelCount = []
 
