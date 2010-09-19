@@ -128,6 +128,8 @@ getStringLiteral _ = (Nothing, 0)
 
 -- Int parameter is used for line counting
 _lexer :: String -> Int -> [Token]
+--if we've run out of chars we're done
+_lexer [] lineCount = []
 _lexer s lineCount | s == [] = []
                   -- match simple string tokens, but check we aren't squashing a better identifier
                   | fst (getTokenForString (map toLower s)) /= Nothing =
@@ -153,19 +155,19 @@ _lexer s lineCount | s == [] = []
                   --if we get an alpha we're at an identifier
                   | isAlpha (head s) = let x = (span isAlphaNum s) in
                                         TokenIdentifier (map toLower (fst x)) : _lexer (snd x) lineCount
-
                   -- integer constant
-                  -- TODO: find a better way to lex e tokens, atm it's a bit of a hack
-                  | isDigit (head s) = let x = span isDigit s in
-                                        let y = span (=='0') s in
-                                            TokenLeadingZeros ((length . fst) y) :
-                                            TokenIntLiteral (read (fst x) :: Int) :
-                                            (if (toLower . head . snd) x `elem` "e" then
-                                                TokenE : _lexer (drop 1 (snd x)) lineCount
-                                             else _lexer (snd x) lineCount)
-
+                  -- ok, this is pretty complex, but basically it checks that it can read an int, that isn't followed by
+                  -- either a '.' or an 'e'
+                  | let r = reads s :: [(Int, String)] in r /= [] && head ((snd . head) r) /= '.'
+                                                        && (toLower . head) ((snd . head) r) /= 'e' =
+                                                                let r = reads s :: [(Int, String)] in
+                                                                TokenIntLiteral ((fst . head) r) : _lexer ((snd . head) r) lineCount
+                  --floating constant, quite easy really
+                  --use reads, check it's valid and then create a realliteral
+                  | (reads s :: [(Float,String)]) /= [] = let readPair = head (reads s :: [(Float,String)]) in
+                                                            TokenRealLiteral (fst readPair) : _lexer (snd readPair) lineCount
                   -- lex string literal
-                  | getStringLiteral s /= (Nothing, 0) = let x = getStringLiteral s in
+                  | s /= [] && getStringLiteral s /= (Nothing, 0) = let x = getStringLiteral s in
                                                 TokenStringLiteral ((certain . fst) x) :
                                                 --drop x + 2 chars because the literal doesn't include the
                                                 --beginning or end quotes
@@ -175,8 +177,6 @@ _lexer s lineCount | s == [] = []
                   --if we encounter something that isn't empty and we've not matched it it's an error
                   | s /= [] = error ("Lexer error at line " ++ show lineCount ++ " around your code:\"" ++ take 5 s ++ "\"")
 
---if we've run out of chars we're done
-_lexer [] lineCount = []
 
 --wildcard match, error because something unexpected happened
 _lexer _ count = error ("hit a wildcard around line " ++ show count)
@@ -212,4 +212,4 @@ lexreals [] = []
 lexreals (a : rest) = a : lexreals rest
 
 lexer :: String -> [Token]
-lexer a = (lexreals . _killLeadingZeros) (_lexer a 1)
+lexer a = (_lexer a 1)
