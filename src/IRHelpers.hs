@@ -21,7 +21,7 @@ regToString reg = 'R' : show reg
 
 --produces instructions to zero a register
 zero :: Int -> String
-zero reg = "\nXOR " ++ regToString reg ++ " " ++ regToString reg ++ " " ++ regToString reg
+zero reg = "\n;zeroing register" ++ show reg ++ "\nXOR " ++ regToString reg ++ " " ++ regToString reg ++ " " ++ regToString reg
 
 --compute the size of a serialized string
 sizeAdd :: String -> Int -> Int
