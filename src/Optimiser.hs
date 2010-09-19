@@ -52,5 +52,17 @@ zeroOpt (LoadImmediateReal reg 0.0 : rest) = Zero reg : zeroOpt rest
 zeroOpt (a : rest) = a : zeroOpt rest
 zeroOpt [] = []
 
+--if we're loading the same var twice, don't do the load twice
+sameVar :: [IRForm] -> [IRForm]
+sameVar (MemoryLoad reg1 location1 :
+        MemoryLoad reg2 location2 :
+        DoMath op r1 r2 r3 : rest) | reg1 + 1 == reg2 && r2 == reg1
+                                     && location1 == location2 = MemoryLoad reg1 location1 :
+                                                                    DoMath op r1 r2 r2
+                                                                    : sameVar rest
+
+sameVar (a : rest) = a : sameVar rest
+sameVar [] = []
+
 optIrTrans :: [IRForm] -> [IRForm]
-optIrTrans = zeroOpt
+optIrTrans = zeroOpt . sameVar
