@@ -181,35 +181,5 @@ _lexer s lineCount | s == [] = []
 --wildcard match, error because something unexpected happened
 _lexer _ count = error ("hit a wildcard around line " ++ show count)
 
-fl :: (Integral a) => a -> Float
-fl a = fromIntegral a :: Float
-
-logBaseTen :: Int -> Float
-logBaseTen 0 = 0
-logBaseTen a = logBase 10.0 (fl a) :: Float
-
-computeFloat :: Int -> Int -> Float
-computeFloat a b = fl a + (fl b / fl (10 ^ (floor (logBaseTen b) + 1)))
-
-exp10 :: Int -> Float
-exp10 a | a >= 0 = fl (10 ^ a)
-        | a < 0 = 1.0/fl (10^(-a))
-
-_killLeadingZeros :: [Token] -> [Token]
-_killLeadingZeros (TokenDot : TokenLeadingZeros a : TokenIntLiteral 0 : rest) = TokenDot : TokenLeadingZeros 0 : TokenIntLiteral 0 : _killLeadingZeros rest
-_killLeadingZeros (TokenDot : TokenLeadingZeros a : TokenIntLiteral b : rest)  = TokenDot : TokenLeadingZeros a : TokenIntLiteral b : _killLeadingZeros rest
-_killLeadingZeros (TokenLeadingZeros zeros : TokenIntLiteral b : rest) = TokenIntLiteral b : _killLeadingZeros rest
-_killLeadingZeros (TokenLeadingZeros a : rest) = error "zeros found somewhere they shouldn't be"
-_killLeadingZeros (a : rest) = a : _killLeadingZeros rest
-_killLeadingZeros [] = []
-
---lex real numbers to real tokens
-lexreals :: [Token] -> [Token]
-lexreals (TokenIntLiteral a : TokenDot : TokenLeadingZeros zeros : TokenIntLiteral b : TokenE : TokenMinus : TokenIntLiteral c : rest) = TokenRealLiteral (computeFloat a b * exp10 ((-c)-zeros)) : lexreals rest
-lexreals (TokenIntLiteral a : TokenDot : TokenLeadingZeros zeros : TokenIntLiteral b : TokenE : TokenIntLiteral c : rest) = TokenRealLiteral (computeFloat a b * exp10 (c-zeros)) : lexreals rest
-lexreals (TokenIntLiteral a : TokenDot : TokenLeadingZeros zeros : TokenIntLiteral b : rest) = TokenRealLiteral (computeFloat a b / exp10 zeros) : lexreals rest
-lexreals [] = []
-lexreals (a : rest) = a : lexreals rest
-
 lexer :: String -> [Token]
 lexer a = (_lexer a 1)
