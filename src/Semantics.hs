@@ -88,6 +88,9 @@ _transformExpressions f (RepeatUntil cmp s : rest) = RepeatUntil (_transformComp
 _transformExpressions f (a : rest) = a : _transformExpressions f rest
 _transformExpressions f [] = []
 
+transformExpressions :: (Expression -> Expression) -> Program -> Program
+transformExpressions f (Program pname (Block decs statements)) = Program pname (Block decs (_transformExpressions f statements))
+
 _mapCmp :: (Expression -> a) -> Comparison -> [a]
 _mapCmp f (Comparison rel e1 e2) = [f e1,f e2]
 
