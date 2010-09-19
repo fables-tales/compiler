@@ -17,8 +17,6 @@ data Token = TokenIdentifier String |
 
              --int literal, reals are lexed in stage 2 of the lexer
              TokenIntLiteral Int |
-             --a number of leading zeros
-             TokenLeadingZeros Int |
              TokenRealLiteral Float |
 
              --type declrations
