@@ -23,6 +23,12 @@ multiplyByZero (Op a b c) = Op a (multiplyByZero b) (multiplyByZero c)
 multiplyByZero (TermConstant a) = TermConstant a
 multiplyByZero (TermVar a) = TermVar a
 
+subtractSame :: Expression -> Expression
+subtractSame (Op Subtract a b) | a == b = TermConstant (IntegerLiteral 0)
+subtractSame (Op a b c) = Op a (subtractSame b) (subtractSame c)
+subtractSame (TermConstant a) = TermConstant a
+subtractSame (TermVar a) = TermVar a
+
 --used to test the tests, breaks expressions
 breakIt :: Expression -> Expression
 breakIt (Op a b c) = Op Add (breakIt b) (breakIt c)
@@ -40,7 +46,7 @@ addZero (TermConstant a) = TermConstant a
 addZero (TermVar a) = TermVar a
 
 optTrans :: Expression -> Expression
-optTrans = multiplyByOne . addZero . multiplyByZero
+optTrans = multiplyByOne . addZero . multiplyByZero . subtractSame
 
 parseOptimise :: Program -> Program
 parseOptimise prog = let p = transformExpressions optTrans prog in if (p == prog) then p else parseOptimise p
