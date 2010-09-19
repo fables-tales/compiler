@@ -1,0 +1,35 @@
+{please use 12 as your data}
+PROGRAM teste;
+
+{variable declarations}
+
+VAR num, count, fact REAL;
+
+{main program}
+
+Begin
+write('Recommended input:'); writeln;
+write('12'); writeln; writeln;
+
+write('Starting test program.');
+writeln;
+writeln;
+write('Please enter a number: ');
+read(num);
+
+count := num;
+fact := 1;
+repeat
+  begin
+  fact := fact * count;
+  count := count - 1.0;
+  end
+until count <= 0.01;
+
+write('Factorial of ');
+write(num);
+write(' is ');
+write(fact);
+writeln;
+
+END.

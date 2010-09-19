@@ -1,0 +1,46 @@
+program testf;
+
+var base, num real;
+    exponent, count integer;
+
+begin
+write('Recommended input:'); writeln;
+write('2'); writeln;
+write('16'); writeln;
+write('0'); writeln; writeln;
+
+write('exponential calculator.');
+writeln;
+write('(enter base = 0 to exit)');
+writeln;
+
+base := -1;
+repeat
+  begin
+  writeln;
+  write('please enter the base: ');
+  read(base);
+  if base != 0.0
+    begin
+    write('please enter the exponent: ');
+    read(exponent);
+    num := 1;
+    count := exponent;
+    repeat
+      begin
+      num := num * base;
+      count := count - 1;
+      end
+    until count <= 0;
+    writeln;
+    write('the base ');
+    write(base);
+    write(' raised to the power of ');
+    write(exponent);
+    write(' is ');
+    write(num);
+    writeln;
+    end;
+  end
+until base = 0.0;
+end.

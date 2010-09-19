@@ -1,0 +1,109 @@
+PROGRAM testa;
+
+{Mandel test program }
+{To test this program, run it, and type '-2 -1.25 0.5 1.25' as input coordinates, and an }
+{iteration count of about 40. It may take some time, but it will get there eventually }
+
+VAR
+	left,right,top,bottom REAL;				{Extremes of the variables }
+	count, i INTEGER;
+	dx,dy,oleft REAL;					 {Steps in both directions}
+	px,py,nx REAL;
+	flag INTEGER;
+BEGIN
+        WRITE('Recommended input:'); WRITELN;
+        WRITE('-2 -1.25 0.5 1.25'); WRITELN;
+        WRITE('40'); WRITELN; WRITELN;
+	WRITE('Please enter (left,top),(right,bottom)');
+	WRITELN;
+	READ(left);
+	READ(top);
+	READ(right);
+	READ(bottom);
+
+	WRITE('Please enter maximum iterations');
+	WRITELN;
+	READ(count);
+
+	oleft := left;
+
+{Ok, so we have got the image to do, now all we need to do is step in both}
+{directions in bits, and print the values of each point }
+
+	dx := (right-left)/80.0;
+	dy := (bottom-top)/40.0;
+
+	REPEAT
+	BEGIN
+		REPEAT
+		BEGIN
+
+			i := 0;
+			px := 0.0;
+			py := 0.0;
+			flag := 1;
+
+			REPEAT
+			BEGIN
+				i := i+1;
+				nx := 2.0*px*py + top;
+				py := py*py - px*px + left;
+				px := nx;
+
+				IF px*px+py*py > 4.0
+				BEGIN
+					flag := 0;
+				END;
+				IF i>count
+				BEGIN
+					flag := 0;
+				END;
+			END
+			UNTIL flag != 1;
+
+			IF i>1
+			BEGIN
+				IF i>3
+				BEGIN
+					IF i>8
+					BEGIN
+						IF i>16
+						BEGIN
+							IF i>32
+							BEGIN
+								WRITE(' ');
+							END
+							ELSE
+							BEGIN
+								WRITE('*');
+							END;
+						END
+						ELSE
+						BEGIN
+							WRITE('&');
+						END;
+					END
+					ELSE
+					BEGIN
+						WRITE('%');
+					END;
+				END
+				ELSE
+				BEGIN
+					WRITE(':');
+				END;
+			END
+			ELSE
+			BEGIN
+				WRITE('.');
+			END;
+
+			left := left + dx;
+		END
+		UNTIL left >= right;
+		WRITELN;
+		left := oleft;					{restore the left value }
+		top := top + dy;		  			{increment the top point}
+	END
+	UNTIL top >= bottom;
+END.
