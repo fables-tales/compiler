@@ -26,7 +26,7 @@ $(BUILD_DIR)/compiler: $(BUILD_DIR) $(TMP_DIR) $(HASKELL) $(COMPILER_MAIN)
 	ghc $(HASKELL) $(MAIN) -o "$@" -tmpdir $(TMP_DIR)
 
 $(BUILD_DIR)/opt-compiler: $(BUILD_DIR) $(TMP_DIR) $(HASKELL) $(OPT_MAIN)
-	ghc $(HASKELL) $(MAIN) -o "$@" -tmpdir $(TMP_DIR)
+	ghc $(HASKELL) $(OPT_MAIN) -o "$@" -tmpdir $(TMP_DIR)
 
 $(BUILD_DIR):
 	mkdir $(BUILD_DIR)
@@ -43,4 +43,5 @@ clean:
 check: all
 	./scripts/test.py
 	python scripts/testrun.py
+	python scripts/testopt.py
 	./scripts/say "all tests completed successfully"

@@ -18,6 +18,18 @@ def do_run_test(test):
 
     #verify run output matches expected
     a = subprocess.call(["./scripts/testrun.sh", input_path,  output_path], stdout=output)
+    result = subprocess.call(["diff",os.path.join(test_root,"run.out"),test_ass_path])
+
+    #if we fail, print an error
+    if (result != 0):
+        print "failed\n"
+        success = 1
+
+    #run output
+    output = open(os.path.join(test_root,"run.out"), "w")
+
+    #verify run output matches expected
+    a = subprocess.call(["./scripts/optrun.sh", input_path,  output_path], stdout=output)
     output.close()
     result = subprocess.call(["diff",os.path.join(test_root,"run.out"),test_ass_path])
 
@@ -25,6 +37,7 @@ def do_run_test(test):
     if (result != 0):
         print "failed\n"
         success = 1
+    return success
     return success
 
 if __name__ == "__main__":
