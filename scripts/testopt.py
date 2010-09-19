@@ -1,7 +1,10 @@
 import os
 
 tests = [
-    ("tests/optimiser/testa.le","", "-2\n-1.25\n0.5\n1.25\n40")
+    ("tests/optimiser/testa.le","", "-2\n-1.25\n0.5\n1.25\n40"),
+    ("tests/optimiser/testb.le","", "11111"),
+    ("tests/optimiser/testc.le","", "1\n20"),
+    ("tests/optimiser/testd.le","", "43"),
 ]
 
 def main():
