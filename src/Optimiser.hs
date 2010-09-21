@@ -69,18 +69,13 @@ sameVar (MemoryLoad reg1 location1 :
 sameVar (a : rest) = a : sameVar rest
 sameVar [] = []
 
-dualLoad :: [IRForm] -> [IRForm]
-dualLoad (LoadImmediateInt reg1 value1
-            : LoadImmediateInt reg2 value2 :
-            rest) = LoadImmediateInt reg1 value1 :
-                    DoMathImmediate AddInt reg2 reg1 (value2 - value1)
-                    : dualLoad rest
-
-dualLoad (a : rest) = a : dualLoad rest
-dualLoad [] = []
+constMath :: [IRForm] -> [IRForm]
+constMath (LoadImmediateInt reg1 value1 : DoMath op r1 r2 r3 : rest) | reg1 == r3 = DoMathImmediateInt op r1 r2 value1 : constMath rest
+constMath (a : rest) = a : constMath rest
+constMath [] = []
 
 optIrTrans :: [IRForm] -> [IRForm]
-optIrTrans = zeroOpt . sameVar . dualLoad
+optIrTrans = zeroOpt . sameVar .  constMath
 
 optimiseIr :: [IRForm] -> [IRForm]
 optimiseIr ir = let trans = optIrTrans ir in if trans == ir then trans else optimiseIr trans
