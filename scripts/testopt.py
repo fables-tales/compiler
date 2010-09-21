@@ -5,6 +5,9 @@ tests = [
     ("tests/optimiser/testb.le","", "11111"),
     ("tests/optimiser/testc.le","", "1\n20"),
     ("tests/optimiser/testd.le","", "43"),
+    ("tests/optimiser/teste.le","", "12"),
+    ("tests/optimiser/testf.le","", "2\n16\n0"),
+    ("tests/optimiser/testg.le","", "")
 ]
 
 def main():
