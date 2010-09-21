@@ -180,4 +180,4 @@ _lexer s lineCount | s == [] = []
 _lexer _ count = error ("hit a wildcard around line " ++ show count)
 
 lexer :: String -> [Token]
-lexer a = (_lexer a 1)
+lexer a = _lexer a 1

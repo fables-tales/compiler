@@ -56,8 +56,20 @@ asmMapping = [
                 (DivInt, "DIV")
              ]
 
-toAsm :: MathOp -> String
-toAsm op = (snd . fromJust) (find ((== op) . fst) asmMapping)
+asmImmediateMapping :: [(MathOp,String)]
+asmImmediateMapping = [
+                        (AddReal, "ADDIR"),
+                        (SubReal, "SUBIR"),
+                        (MulReal, "MULIR"),
+                        (DivReal, "DIVIR"),
+                        (AddInt, "ADDI"),
+                        (SubInt, "SUBI"),
+                        (MulInt, "MULI"),
+                        (DivInt, "DIVI")
+                      ]
+
+toAsm :: MathOp -> Bool -> String
+toAsm op immediate = (snd . fromJust) (find ((== op) . fst) (if immediate then asmImmediateMapping else asmMapping))
 
 
 --convert a string to data pesudo instructions

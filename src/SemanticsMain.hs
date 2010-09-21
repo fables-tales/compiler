@@ -11,5 +11,5 @@ main :: IO()
 main = do args <- getArgs;
           contents <- readFile (head args);
           let semanticPair = (verifySemantics . camleParser . lexer) contents;
-          if fst semanticPair then putStrLn (show (snd semanticPair)) else error "bad program semantics"
+          if fst semanticPair then print (snd semanticPair) else error "bad program semantics"
 

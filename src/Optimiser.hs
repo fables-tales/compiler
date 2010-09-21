@@ -49,7 +49,7 @@ optTrans :: Expression -> Expression
 optTrans = multiplyByOne . addZero . multiplyByZero . subtractSame
 
 parseOptimise :: Program -> Program
-parseOptimise prog = let p = transformExpressions optTrans prog in if (p == prog) then p else parseOptimise p
+parseOptimise prog = let p = transformExpressions optTrans prog in if p == prog then p else parseOptimise p
 
 --both int zero and floating zero are all zero bits, so just zero the reg
 zeroOpt :: [IRForm] -> [IRForm]
@@ -66,9 +66,21 @@ sameVar (MemoryLoad reg1 location1 :
                                      && location1 == location2 = MemoryLoad reg1 location1 :
                                                                     DoMath op r1 r2 r2
                                                                     : sameVar rest
-
 sameVar (a : rest) = a : sameVar rest
 sameVar [] = []
 
+dualLoad :: [IRForm] -> [IRForm]
+dualLoad (LoadImmediateInt reg1 value1
+            : LoadImmediateInt reg2 value2 :
+            rest) = LoadImmediateInt reg1 value1 :
+                    DoMathImmediate AddInt reg2 reg1 (value2 - value1)
+                    : dualLoad rest
+
+dualLoad (a : rest) = a : dualLoad rest
+dualLoad [] = []
+
 optIrTrans :: [IRForm] -> [IRForm]
-optIrTrans = zeroOpt . sameVar
+optIrTrans = zeroOpt . sameVar . dualLoad
+
+optimiseIr :: [IRForm] -> [IRForm]
+optimiseIr ir = let trans = optIrTrans ir in if trans == ir then trans else optimiseIr trans
