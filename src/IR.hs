@@ -177,7 +177,7 @@ _toAssembly (MemoryLoad reg addr : rest) = let spare = findSpareReg reg in zero 
 _toAssembly (IToR reg : rest) = "ITOR " ++ regToString reg ++ " " ++ regToString reg ++ "\n" ++ _toAssembly rest
 _toAssembly (RToI reg : rest) = "RTOI " ++ regToString reg ++ " " ++ regToString reg ++ "\n" ++ _toAssembly rest
 _toAssembly (DoMath op a b c : rest) = toAsm op False ++ " " ++ regToString a ++ " " ++ regToString b ++ " " ++ regToString c ++ "\n" ++ _toAssembly rest
-_toAssembly (DoMathImmediateInt op rtarget rvalue immediate : rest) = toAsm op True ++ " " ++ regToString rtarget ++ " " ++ regToString rvalue ++ " " ++ show immediate ++ "\n" ++ _toAssembly rest
+_toAssembly (DoMathImmediate op rtarget rvalue immediate : rest) = toAsm op True ++ " " ++ regToString rtarget ++ " " ++ regToString rvalue ++ " " ++ show immediate ++ "\n" ++ _toAssembly rest
 _toAssembly (Br cond reg label : rest) = brAsm cond ++ " " ++  regToString reg ++ " " ++ label ++ "\n" ++  _toAssembly rest
 _toAssembly (Zero reg : rest) = zero reg ++ "\n" ++ _toAssembly rest
 _toAssembly (Label a : rest) = a ++ ":\n" ++ _toAssembly rest

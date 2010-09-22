@@ -70,7 +70,7 @@ sameVar (a : rest) = a : sameVar rest
 sameVar [] = []
 
 constMath :: [IRForm] -> [IRForm]
-constMath (LoadImmediateInt reg1 value1 : DoMath op r1 r2 r3 : rest) | reg1 == r3 = DoMathImmediateInt op r1 r2 value1 : constMath rest
+constMath (LoadImmediateInt reg1 value1 : DoMath op r1 r2 r3 : rest) | reg1 == r3 = DoMathImmediate op r1 r2 value1 : constMath rest
 constMath (a : rest) = a : constMath rest
 constMath [] = []
 

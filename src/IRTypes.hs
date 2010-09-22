@@ -9,7 +9,7 @@ data IRForm = WriteInt {register :: Int} | WriteReal {register :: Int}
               | WriteString {location :: Int} | DataPseudo Int | Halt | MemoryStore {reg,memoryAddr :: Int}
               | MemoryLoad {reg,memoryAddr :: Int} | IToR {reg :: Int} | RToI {reg :: Int}
               | DoMath {op :: MathOp, r1,r2,r3 :: Int} | Label String
-              | DoMathImmediateInt {op :: MathOp, r1,r2,immediate :: Int}
+              | DoMathImmediate {op :: MathOp, r1,r2,immediate :: Int}
               | Zero {reg :: Int}
               --condition to branch on and register to compare
               | Br {cond :: BrCondition, reg :: Int, label :: String}
