@@ -6,6 +6,7 @@ import Data.List
 import IRHelpers
 import IRTypes
 import ParserTypes
+import Optimiser
 
 --convert an expression to ir form, put result in second integer arg
 --the offset parameter is the offset of the variable block of memory after the stirng block
@@ -141,19 +142,19 @@ _toIrForm (a : rest) stringTable decs labelCount = _toIrForm rest stringTable de
 _toIrForm [] stringTable decs labelCount = []
 
 
-brTable :: [(BrCondition,String)]
+brTable :: [(BrCondition,Int->String->Assembly)]
 brTable =  [
-             (LtZR,  "BLTZR"),
-             (LtZ,   "BLTZ"),
-             (GeqZ,  "BGEZ"),
-             (GeqZR, "BGEZR"),
-             (EqZ,   "BEQZ"),
-             (EqZR,  "BEQZR"),
-             (NEqZ,  "BNEZ"),
-             (NEqZR, "BNEZR")
+             (LtZR,  BLTZR),
+             (LtZ,   BLTZ),
+             (GeqZ,  BGEZ),
+             (GeqZR, BGEZR),
+             (EqZ,   BEQZ),
+             (EqZR,  BEQZR),
+             (NEqZ,  BNEZ),
+             (NEqZR, BNEZR)
            ]
 
-brAsm :: BrCondition -> String
+brAsm :: BrCondition -> (Int -> String -> Assembly)
 brAsm a = (snd . fromJust) (find ((== a) . fst) brTable)
 
 --convert program to ir form
@@ -161,31 +162,72 @@ toIrForm :: Program -> [IRForm]
 toIrForm (Program name (Block decs statements)) = let table = (("\n",0),[DataPseudo 10, DataPseudo 0]) : dataMapTable statements 2 in
                                                   _toIrForm statements table decs 0 ++ (Halt : writeTable table ++ allocateDeclarations decs)
 
-_toAssembly :: [IRForm] -> String
-_toAssembly ((WriteInt {register = a}) : rest) = ";writing register r" ++ show a ++ "\nWR " ++ regToString a ++ "\n" ++ _toAssembly rest
-_toAssembly ((WriteReal {register = a}) : rest) = ";writing register r" ++ show a ++ "\nWRR " ++ regToString a ++ "\n" ++ _toAssembly rest
-_toAssembly ((LoadImmediateInt {register = reg, value = v}) : rest) = ";loading immediate " ++ show v ++ " into register r" ++ show reg
-                                                            ++ zero reg ++ "\n"
-                                                            ++ "ADDI " ++ regToString reg ++ " " ++ regToString reg ++ " " ++ show v ++ "\n" ++ _toAssembly rest
-_toAssembly ((LoadImmediateReal {register = reg, fvalue = v}) : rest) = ";loading immediate " ++ show v ++ "into register r" ++ show reg
-                                                                       ++ "\nMOVIR " ++ regToString reg ++ " " ++ show v ++ "\n" ++ _toAssembly rest
-_toAssembly (WriteString {location = loc} : rest) = "WRS " ++ show loc ++ "\n" ++ _toAssembly rest
-_toAssembly (Halt : rest) = "HALT\n" ++ _toAssembly rest
-_toAssembly (DataPseudo a : rest) = "DATA " ++ show a ++ "\n" ++ _toAssembly rest
-_toAssembly (MemoryStore reg addr : rest) = let spare = findSpareReg reg in zero spare ++ "\nSTORE " ++ regToString reg ++ " " ++ regToString spare ++ " " ++ show addr ++ "\n" ++ _toAssembly rest
-_toAssembly (MemoryLoad reg addr : rest) = let spare = findSpareReg reg in zero spare ++ "\nLOAD " ++ regToString reg ++ " " ++ regToString spare ++ " " ++ show addr ++ "\n" ++ _toAssembly rest
-_toAssembly (IToR reg : rest) = "ITOR " ++ regToString reg ++ " " ++ regToString reg ++ "\n" ++ _toAssembly rest
-_toAssembly (RToI reg : rest) = "RTOI " ++ regToString reg ++ " " ++ regToString reg ++ "\n" ++ _toAssembly rest
-_toAssembly (DoMath op a b c : rest) = toAsm op False ++ " " ++ regToString a ++ " " ++ regToString b ++ " " ++ regToString c ++ "\n" ++ _toAssembly rest
-_toAssembly (DoMathImmediate op rtarget rvalue immediate : rest) = toAsm op True ++ " " ++ regToString rtarget ++ " " ++ regToString rvalue ++ " " ++ show immediate ++ "\n" ++ _toAssembly rest
-_toAssembly (Br cond reg label : rest) = brAsm cond ++ " " ++  regToString reg ++ " " ++ label ++ "\n" ++  _toAssembly rest
-_toAssembly (Zero reg : rest) = zero reg ++ "\n" ++ _toAssembly rest
-_toAssembly (Label a : rest) = a ++ ":\n" ++ _toAssembly rest
-_toAssembly (ReadInt reg location : rest) = "RD " ++ regToString reg ++ "\n" ++ _toAssembly [MemoryStore reg location] ++ _toAssembly rest
-_toAssembly (ReadFloat reg location : rest) = "RDR " ++ regToString reg ++ "\n" ++ _toAssembly [MemoryStore reg location] ++ _toAssembly rest
+--convert ir to assembly data structure
+_toAssembly :: [IRForm] -> [Assembly]
+_toAssembly ((WriteInt {register = a}) : rest) = WR a : _toAssembly rest
+_toAssembly ((WriteReal {register = a}) : rest) = WRR a : _toAssembly rest
+_toAssembly ((LoadImmediateInt {register = reg, value = v}) : rest) = XOR reg reg reg : ADDI reg reg v : _toAssembly rest
+_toAssembly ((LoadImmediateReal {register = reg, fvalue = v}) : rest) = MOVIR reg v : _toAssembly rest
+_toAssembly (WriteString {location = loc} : rest) = WRS loc : _toAssembly rest
+_toAssembly (Halt : rest) = HALT : _toAssembly rest
+_toAssembly (DataPseudo a : rest) = DATA a : _toAssembly rest
+_toAssembly (MemoryStore reg addr : rest) = let spare = findSpareReg reg in XOR spare spare spare
+                                            : STORE reg spare addr : _toAssembly rest
+_toAssembly (MemoryLoad reg addr : rest) = let spare = findSpareReg reg in XOR spare spare spare :
+                                             LOAD reg spare addr : _toAssembly rest
+_toAssembly (IToR reg : rest) = ITOR reg reg : _toAssembly rest
+_toAssembly (RToI reg : rest) = RTOI reg reg : _toAssembly rest
+_toAssembly (DoMath op a b c : rest) = (toAsm op False) a b c : _toAssembly rest
+_toAssembly (DoMathImmediate op rtarget rvalue immediate : rest) = (toAsm op True) rtarget rvalue immediate : _toAssembly rest
+_toAssembly (Br cond reg label : rest) = (brAsm cond) reg label : _toAssembly rest
+_toAssembly (Zero reg : rest) = XOR reg reg reg : _toAssembly rest
+_toAssembly (Label a : rest) = Lbl a : _toAssembly rest
+_toAssembly (ReadInt reg location : rest) = RD reg : _toAssembly [MemoryStore reg location] ++ _toAssembly rest
+_toAssembly (ReadFloat reg location : rest) = RDR reg : _toAssembly [MemoryStore reg location] ++ _toAssembly rest
 _toAssembly (_ : rest) = _toAssembly rest
 _toAssembly [] = []
 
 
+_codePrinter :: [Assembly] -> String
+_codePrinter (WR reg : rest) = "WR r" ++ show reg ++ "\n" ++ _codePrinter rest
+_codePrinter (WRR reg : rest) = "WRR r" ++ show reg ++ "\n" ++ _codePrinter rest
+_codePrinter (WRS loc : rest) = "WRS " ++ show loc ++ "\n" ++ _codePrinter rest
+_codePrinter (RD a : rest) = "RD r" ++ show a ++ "\n" ++ _codePrinter rest
+_codePrinter (RDR a : rest) = "RDR r" ++ show a ++ "\n" ++ _codePrinter rest
+_codePrinter (XOR a b c : rest) = "XOR r" ++ show a ++ " r" ++ show b ++ " r" ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (ADDI a b c : rest) = "ADDI r" ++ show a ++ " r" ++ show b ++ " " ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (SUBI a b c : rest) = "SUBI r" ++ show a ++ " r" ++ show b ++ " " ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (DIVI a b c : rest) = "DIVI r" ++ show a ++ " r" ++ show b ++ " " ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (MULI a b c : rest) = "MULI r" ++ show a ++ " r" ++ show b ++ " " ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (ADD a b c : rest) = "ADD r" ++ show a ++ " r" ++ show b ++ " r" ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (SUB a b c : rest) = "SUB r" ++ show a ++ " r" ++ show b ++ " r" ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (MUL a b c : rest) = "MUL r" ++ show a ++ " r" ++ show b ++ " r" ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (DIV a b c : rest) = "DIV r" ++ show a ++ " r" ++ show b ++ " r" ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (ADDR a b c : rest) = "ADDR r" ++ show a ++ " r" ++ show b ++ " r" ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (SUBR a b c : rest) = "SUBR r" ++ show a ++ " r" ++ show b ++ " r" ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (MULR a b c : rest) = "MULR r" ++ show a ++ " r" ++ show b ++ " r" ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (DIVR a b c : rest) = "DIVR r" ++ show a ++ " r" ++ show b ++ " r" ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (ITOR a b : rest) = "ITOR r" ++ show a ++ " r" ++ show b ++ "\n" ++ _codePrinter rest
+_codePrinter (RTOI a b : rest) = "RTOI r" ++ show a ++ " r" ++ show b ++ "\n" ++ _codePrinter rest
+_codePrinter (MOVIR a b : rest) = "MOVIR r" ++ show a ++ " " ++ show b ++ "\n" ++ _codePrinter rest
+_codePrinter (BLTZR a b : rest) = "BLTZR r" ++ show a ++ " " ++ b ++ "\n" ++ _codePrinter rest
+_codePrinter (BLTZ a b : rest) = "BLTZ r" ++ show a ++ " " ++ b ++ "\n" ++ _codePrinter rest
+_codePrinter (BGEZR a b : rest) = "BGEZR r" ++ show a ++ " " ++ b ++ "\n" ++ _codePrinter rest
+_codePrinter (BGEZ a b : rest) = "BGEZ r" ++ show a ++ " " ++ b ++ "\n" ++ _codePrinter rest
+_codePrinter (BEQZR a b : rest) = "BEQZR r" ++ show a ++ " " ++ b ++ "\n" ++ _codePrinter rest
+_codePrinter (BEQZ a b : rest) = "BEQZ r" ++ show a ++ " " ++ b ++ "\n" ++ _codePrinter rest
+_codePrinter (BNEZR a b : rest) = "BNEZR r" ++ show a ++ " " ++ b ++ "\n" ++ _codePrinter rest
+_codePrinter (BNEZ a b : rest) = "BNEZ r" ++ show a ++ " " ++ b ++ "\n" ++ _codePrinter rest
+_codePrinter (STORE a b c : rest) = "STORE r" ++ show a ++ " r" ++ show b ++ " " ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (LOAD a b c : rest) = "LOAD r" ++ show a ++ " r" ++ show b ++ " " ++ show c ++ "\n" ++ _codePrinter rest
+_codePrinter (DATA a : rest) = "DATA " ++ show a ++ "\n" ++ _codePrinter rest
+_codePrinter (Lbl a : rest) = a ++ ":\n" ++ _codePrinter rest
+_codePrinter (HALT : rest) = "HALT\n" ++ _codePrinter rest
+_codePrinter [] = ""
+_codePrinter (a : rest) = error (show a)
+
 toAssembly :: [IRForm] -> String
-toAssembly = _toAssembly
+toAssembly = _codePrinter . _toAssembly
+
+--optToAssembly :: [IRForm] -> String
+--optToAssembly = _codePrinter . optAssembly . _toAssembly

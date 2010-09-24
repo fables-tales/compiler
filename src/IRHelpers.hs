@@ -44,31 +44,27 @@ toIRExpType IntType = TInt
 writeTable :: [((String, Int), [IRForm])] -> [IRForm]
 writeTable a = let tbl = concatMap snd a in roundDataSize 4 tbl
 
-asmMapping :: [(MathOp,String)]
+asmMapping :: [(MathOp,(Int->Int->Int->Assembly))]
 asmMapping = [
-                (AddReal, "ADDR"),
-                (SubReal, "SUBR"),
-                (MulReal, "MULR"),
-                (DivReal, "DIVR"),
-                (AddInt, "ADD"),
-                (SubInt, "SUB"),
-                (MulInt, "MUL"),
-                (DivInt, "DIV")
+                (AddReal, ADDR),
+                (SubReal, SUBR),
+                (MulReal, MULR),
+                (DivReal, DIVR),
+                (AddInt, ADD),
+                (SubInt, SUB),
+                (MulInt, MUL),
+                (DivInt, DIV)
              ]
 
-asmImmediateMapping :: [(MathOp,String)]
+asmImmediateMapping :: [(MathOp,(Int->Int->Int->Assembly))]
 asmImmediateMapping = [
-                        (AddReal, "ADDIR"),
-                        (SubReal, "SUBIR"),
-                        (MulReal, "MULIR"),
-                        (DivReal, "DIVIR"),
-                        (AddInt, "ADDI"),
-                        (SubInt, "SUBI"),
-                        (MulInt, "MULI"),
-                        (DivInt, "DIVI")
+                        (AddInt, ADDI),
+                        (SubInt, SUBI),
+                        (MulInt, MULI),
+                        (DivInt, DIVI)
                       ]
 
-toAsm :: MathOp -> Bool -> String
+toAsm :: MathOp -> Bool -> (Int -> Int -> Int -> Assembly)
 toAsm op immediate = (snd . fromJust) (find ((== op) . fst) (if immediate then asmImmediateMapping else asmMapping))
 
 

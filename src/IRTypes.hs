@@ -18,5 +18,17 @@ data IRForm = WriteInt {register :: Int} | WriteReal {register :: Int}
 
 data BrCondition = LtZ | LtZR | GeqZ | GeqZR | EqZ | EqZR | NEqZ | NEqZR deriving (Show, Read, Eq)
 
+
+data Assembly = ADD Int Int Int | DIV Int Int Int | MUL Int Int Int | SUB Int Int Int
+                | ADDR Int Int Int | DIVR Int Int Int | MULR Int Int Int | SUBR Int Int Int
+                | ADDI Int Int Int | DIVI Int Int Int | MULI Int Int Int | SUBI Int Int Int
+                | ITOR Int Int | RTOI Int Int | DATA Int | HALT | WRS Int | RD Int | RDR Int
+                | STORE Int Int Int | XOR Int Int Int | LOAD Int Int Int | LABEL String
+                | WR Int | WRR Int | MOVIR Int Float | BLTZR Int String | BLTZ Int String
+                | BGEZ Int String | BGEZR Int String | BEQZ Int String | BEQZR Int String
+                | BNEZ Int String | BNEZR Int String | Lbl String deriving (Show, Read, Eq)
+
+
+
 data IRExpType = TInt | TReal deriving (Show, Read, Eq, Ord)
 
