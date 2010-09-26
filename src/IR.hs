@@ -229,5 +229,5 @@ _codePrinter (a : rest) = error (show a)
 toAssembly :: [IRForm] -> String
 toAssembly = _codePrinter . _toAssembly
 
---optToAssembly :: [IRForm] -> String
---optToAssembly = _codePrinter . optAssembly . _toAssembly
+optToAssembly :: [IRForm] -> String
+optToAssembly = _codePrinter . optAssembly . _toAssembly

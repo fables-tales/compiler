@@ -79,3 +79,7 @@ optIrTrans = zeroOpt . sameVar .  constMath
 
 optimiseIr :: [IRForm] -> [IRForm]
 optimiseIr ir = let trans = optIrTrans ir in if trans == ir then trans else optimiseIr trans
+
+
+optAssembly :: [Assembly] -> [Assembly]
+optAssembly a = a
