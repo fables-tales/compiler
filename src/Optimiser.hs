@@ -80,6 +80,17 @@ optIrTrans = zeroOpt . sameVar .  constMath
 optimiseIr :: [IRForm] -> [IRForm]
 optimiseIr ir = let trans = optIrTrans ir in if trans == ir then trans else optimiseIr trans
 
+deadLoad :: [Assembly] -> [Assembly]
+deadLoad (STORE rega regb offseta
+            : LOAD regc regd offsetb
+            : rest) | rega == regc
+                      && offseta == offsetb
+                      && regb == regd = STORE rega regb offseta : deadLoad rest
+deadLoad (a : rest) = a : deadLoad rest
+deadLoad [] = []
+
+optAsmTrans :: [Assembly] -> [Assembly]
+optAsmTrans = deadLoad
 
 optAssembly :: [Assembly] -> [Assembly]
-optAssembly a = a
+optAssembly a = let trans = optAsmTrans a in if trans == a then trans else optAssembly trans
