@@ -1,5 +1,5 @@
 BUILD_DIR = build
-HASKELL = src/Lexer.hs src/ParserTypes.hs src/Parser.hs src/Semantics.hs src/IRTypes.hs src/Optimiser.hs src/IRHelpers.hs src/IR.hs
+HASKELL = src/Lexer.hs src/ParserTypes.hs src/Parser.hs src/Semantics.hs src/IRTypes.hs src/IRHelpers.hs src/OptHelpers.hs src/Optimiser.hs src/IR.hs
 LEXER_MAIN = src/LexerMain.hs
 PARSER_MAIN = src/ParserMain.hs
 SEMANTICS_MAIN = src/SemanticsMain.hs

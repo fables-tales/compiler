@@ -109,7 +109,7 @@ selectRichestType :: IRExpType -> IRExpType -> IRExpType
 selectRichestType a b = if TReal `elem` [a,b] then TReal else TInt
 
 checkedCast :: IRExpType -> IRExpType -> Int -> [IRForm]
-checkedCast richest t reg = [IToR reg | richest > t]
+checkedCast richest t reg = [IToR reg reg | richest > t]
 
 irOperations :: [((BinOp,IRExpType),MathOp)]
 irOperations = [
@@ -156,3 +156,12 @@ opposite RelEq = RelNeq
 opposite RelNeq = RelEq
 opposite RelLessEq = RelGreater
 opposite RelLess = RelGreaterEq
+
+--get the string from a label
+getLabel :: IRForm -> String
+getLabel (Label s) = s
+
+--matches a br against a label
+matchingBr :: String -> IRForm -> Bool
+matchingBr string (Br _ _ s) = string == s
+matchingBr string _ = False

@@ -96,8 +96,8 @@ _toIrForm (Assign id exp : rest) stringTable decs labelCount = let
                                                     pair = expToIr exp decs dataOffset 1
                                                   in
                                                fst pair ++
-                                               [RToI 1 | snd pair == TReal && getType decs id == TInt] ++
-                                               [IToR 1 | snd pair == TInt && getType decs id == TReal] ++
+                                               [RToI 1 1 | snd pair == TReal && getType decs id == TInt] ++
+                                               [IToR 1 1 | snd pair == TInt && getType decs id == TReal] ++
                                                MemoryStore 1 (varLocation dataOffset decs id) :
                                                _toIrForm rest stringTable decs labelCount
 
@@ -174,8 +174,8 @@ _toAssembly (Halt : rest) = HALT : _toAssembly rest
 _toAssembly (DataPseudo a : rest) = DATA a : _toAssembly rest
 _toAssembly (MemoryStore reg addr : rest) = let spare = 0 in STORE reg spare addr : _toAssembly rest
 _toAssembly (MemoryLoad reg addr : rest) = let spare = 0 in LOAD reg spare addr : _toAssembly rest
-_toAssembly (IToR reg : rest) = ITOR reg reg : _toAssembly rest
-_toAssembly (RToI reg : rest) = RTOI reg reg : _toAssembly rest
+_toAssembly (IToR r1 r2 : rest) = ITOR r1 r2 : _toAssembly rest
+_toAssembly (RToI r1 r2 : rest) = RTOI r1 r2 : _toAssembly rest
 _toAssembly (DoMath op a b c : rest) = (toAsm op False) a b c : _toAssembly rest
 _toAssembly (DoMathImmediate op rtarget rvalue immediate : rest) = (toAsm op True) rtarget rvalue immediate : _toAssembly rest
 _toAssembly (Br cond reg label : rest) = (brAsm cond) reg label : _toAssembly rest
