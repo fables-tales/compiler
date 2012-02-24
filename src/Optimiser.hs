@@ -2,7 +2,6 @@ module Optimiser where
 import Semantics
 import ParserTypes
 import IRTypes
-import OptHelpers
 import Data.Maybe
 
 --strength reduction on multiply by one
@@ -76,25 +75,8 @@ constMath (LoadImmediateInt reg1 value1 : DoMath op r1 r2 r3 : rest) | reg1 == r
 constMath (a : rest) = a : constMath rest
 constMath [] = []
 
-loopLoads :: [IRForm] -> [IRForm]
-loopLoads program | hasLoopHead program = let
-                                            split = getLoopRest program
-                                            loop = (fst . fromJust) split
-                                            rest = (snd . fromJust) split
-                                            highestReg = findHighestReg loop
-                                            memAccessTable = moveLoadStore highestReg loop
-                                            loadTable = tableLoads memAccessTable loop
-                                            storeTable = tableStores memAccessTable loop
-                                          in
-                                            serializeLoadTable loadTable ++
-                                            swapMemoryForRegs loop memAccessTable ++
-                                            serializeStoreTable storeTable ++
-                                            loopLoads rest
-loopLoads (a : rest) = a : loopLoads rest
-loopLoads [] = []
-
 optIrTrans :: [IRForm] -> [IRForm]
-optIrTrans = zeroOpt . sameVar . constMath . loopLoads
+optIrTrans = zeroOpt . sameVar . constMath 
 
 optimiseIr :: [IRForm] -> [IRForm]
 optimiseIr ir = let trans = optIrTrans ir in if trans == ir then trans else optimiseIr trans
